@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReplyHandler · Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:        #05080b;
+  --s1:        #090e13;
+  --s2:        #0e1820;
+  --s3:        #132030;
+  --border:    #1a2d3d;
+  --border2:   #243d52;
+  --hot:       #ff4136;
+  --warm:      #ffb700;
+  --cold:      #00b4d8;
+  --green:     #00e676;
+  --accent:    #e8ff47;
+  --accent2:   #ff6b35;
+  --text:      #ddeeff;
+  --muted:     #4d7a99;
+  --dim:       #253d50;
+  --font-d:    'Clash Display', sans-serif;
+  --font-m:    'DM Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-m);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* noise grain overlay */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.4;
+}
+
+/* scanline */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);
+  pointer-events:none;z-index:9998;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  height:56px;
+  background:rgba(5,8,11,.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-d);font-size:16px;font-weight:700;
+  letter-spacing:-.02em;color:var(--text);
+}
+.logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px var(--accent);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{
+  font-family:var(--font-m);font-size:12px;
+  padding:6px 18px;border-radius:6px;border:none;
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .2s;letter-spacing:.04em;
+}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{background:var(--s3);color:var(--accent);border:1px solid var(--border2);}
+
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.sync-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--muted);
+}
+.sync-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px var(--green);
+  animation:blink 2s infinite;
+}
+.sync-dot.idle{background:var(--muted);box-shadow:none;animation:none;}
+.sync-dot.error{background:var(--hot);box-shadow:0 0 8px var(--hot);animation:none;}
+
+/* ── CONFIG DRAWER ── */
+.config-drawer{
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+}
+.cfg-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;}
+.cfg-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);}
+.cfg-input{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:7px 10px;
+  color:var(--text);font-family:var(--font-m);font-size:12px;
+  outline:none;transition:border-color .2s;
+}
+.cfg-input:focus{border-color:var(--accent);}
+.cfg-input::placeholder{color:var(--dim);}
+.btn{
+  font-family:var(--font-d);font-size:12px;font-weight:600;
+  padding:8px 20px;border-radius:6px;border:none;
+  cursor:pointer;transition:all .2s;letter-spacing:.04em;white-space:nowrap;
+}
+.btn-accent{background:var(--accent);color:#000;}
+.btn-accent:hover{opacity:.85;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── VIEWS ── */
+.view{display:none;padding:24px 28px 48px;}
+.view.active{display:block;}
+
+/* ── SECTION HEADER ── */
+.section-head{
+  display:flex;align-items:baseline;gap:14px;
+  margin-bottom:22px;
+}
+.section-title{
+  font-family:var(--font-d);font-size:28px;font-weight:700;
+  letter-spacing:-.04em;line-height:1;
+}
+.section-title span{color:var(--accent);}
+.section-sub{font-size:11px;color:var(--muted);}
+
+/* ── STAT STRIP ── */
+.stat-strip{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;margin-bottom:24px;
+}
+.stat{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:16px 18px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s, transform .2s;
+}
+.stat:hover{border-color:var(--border2);transform:translateY(-1px);}
+.stat-accent-line{
+  position:absolute;top:0;left:0;right:0;height:2px;
+}
+.stat-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.stat-val{
+  font-family:var(--font-d);font-size:34px;font-weight:700;
+  letter-spacing:-.04em;line-height:1;
+}
+.stat-hint{font-size:10px;color:var(--dim);margin-top:5px;}
+
+/* ── GRID LAYOUT ── */
+.dash-grid{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:18px;align-items:start;
+}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr;}}
+
+/* ── PANEL ── */
+.panel{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:var(--font-d);font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+}
+.panel-badge{
+  font-size:10px;padding:2px 8px;border-radius:100px;
+  background:var(--s3);color:var(--muted);border:1px solid var(--border);
+}
+
+/* ── FILTER BAR ── */
+.filter-bar{
+  display:flex;gap:6px;padding:10px 18px;
+  border-bottom:1px solid var(--border);flex-wrap:wrap;
+}
+.fbtn{
+  font-family:var(--font-m);font-size:11px;
+  padding:4px 12px;border-radius:100px;
+  border:1px solid var(--border);
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .15s;
+}
+.fbtn:hover{color:var(--text);border-color:var(--border2);}
+.fbtn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:500;}
+
+/* ── TABLE ── */
+.tscroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);padding:10px 14px;text-align:left;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+  background:var(--s1);position:sticky;top:0;
+}
+tbody tr{
+  border-bottom:1px solid rgba(26,45,61,.6);
+  transition:background .12s;cursor:pointer;
+}
+tbody tr:hover{background:rgba(232,255,71,.03);}
+tbody tr:last-child{border-bottom:none;}
+td{
+  padding:12px 14px;font-size:12px;color:var(--text);
+  vertical-align:middle;
+}
+
+/* badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--font-d);font-size:11px;font-weight:600;
+  padding:3px 10px;border-radius:100px;letter-spacing:.04em;
+  white-space:nowrap;
+}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.badge.Hot{background:rgba(255,65,54,.12);color:var(--hot);border:1px solid rgba(255,65,54,.25);}
+.badge.Warm{background:rgba(255,183,0,.1);color:var(--warm);border:1px solid rgba(255,183,0,.22);}
+.badge.Cold{background:rgba(0,180,216,.1);color:var(--cold);border:1px solid rgba(0,180,216,.22);}
+.badge.prospect{background:rgba(232,255,71,.08);color:var(--accent);border:1px solid rgba(232,255,71,.2);}
+.badge.no-web{background:rgba(255,107,53,.1);color:var(--accent2);border:1px solid rgba(255,107,53,.2);}
+
+/* score bar */
+.sbar-wrap{display:flex;align-items:center;gap:8px;min-width:90px;}
+.sbar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.sbar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.snum{font-size:12px;min-width:26px;font-weight:500;}
+
+/* action tag */
+.atag{
+  font-size:10px;padding:2px 8px;border-radius:4px;
+  font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+}
+.atag.Immediate{background:rgba(255,65,54,.15);color:var(--hot);}
+.atag.Nurture{background:rgba(255,183,0,.12);color:var(--warm);}
+.atag.Freebie{background:rgba(0,180,216,.12);color:var(--cold);}
+
+/* rating */
+.rating{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;
+}
+.stars{color:var(--warm);letter-spacing:1px;}
+
+/* prospect problem */
+.prob-cell{
+  max-width:280px;font-size:11px;color:var(--muted);
+  white-space:normal;line-height:1.5;
+}
+.name-cell{font-weight:500;color:var(--text);}
+.sub-cell{font-size:10px;color:var(--muted);margin-top:1px;}
+
+/* ── SIDEBAR WIDGETS ── */
+.sidebar{display:flex;flex-direction:column;gap:14px;}
+.chart-wrap{padding:18px;}
+.chart-box{position:relative;height:190px;}
+
+.dist-list{padding:14px 18px;display:flex;flex-direction:column;gap:10px;}
+.dist-row{display:flex;flex-direction:column;gap:4px;}
+.dist-meta{display:flex;justify-content:space-between;font-size:11px;}
+.dist-meta span:first-child{color:var(--muted);}
+.dist-meta span:last-child{color:var(--dim);}
+.dist-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.dist-fill{height:100%;border-radius:3px;transition:width .9s ease;}
+
+.activity-list{padding:10px 16px;display:flex;flex-direction:column;}
+.act-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid rgba(26,45,61,.5);
+}
+.act-item:last-child{border-bottom:none;}
+.act-icon{font-size:14px;margin-top:1px;}
+.act-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.act-meta{font-size:10px;color:var(--dim);}
+
+/* ── PROSPECT TABLE SPECIFIC ── */
+.website-link{
+  font-size:11px;color:var(--cold);
+  text-decoration:none;
+}
+.website-link:hover{text-decoration:underline;}
+.na{color:var(--dim);font-size:11px;}
+
+/* ── EMPTY ── */
+.empty{padding:50px 20px;text-align:center;color:var(--dim);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty p{font-size:13px;line-height:1.7;}
+.empty span{color:var(--muted);}
+
+/* ── MODAL ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(5,8,11,.88);backdrop-filter:blur(8px);
+  z-index:500;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.show{display:flex;}
+.modal{
+  background:var(--s1);border:1px solid var(--border2);
+  border-radius:16px;padding:28px;max-width:580px;width:100%;
+  max-height:85vh;overflow-y:auto;
+  animation:mup .22s ease;
+}
+@keyframes mup{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.modal-close{
+  background:none;border:none;color:var(--muted);
+  font-size:18px;cursor:pointer;padding:0 2px;
+}
+.modal-close:hover{color:var(--text);}
+.mrow{display:flex;flex-direction:column;gap:3px;margin-bottom:13px;}
+.mrow-lbl{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);}
+.mrow-val{font-size:13px;color:var(--text);line-height:1.55;}
+.mdiv{border:none;border-top:1px solid var(--border);margin:16px 0;}
+
+/* ── LOADING ── */
+.loader{
+  display:none;position:fixed;inset:0;
+  background:rgba(5,8,11,.8);backdrop-filter:blur(6px);
+  z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+}
+.loader.show{display:flex;}
+.spin{
+  width:36px;height:36px;
+  border:2px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:11px;color:var(--muted);letter-spacing:.12em;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:22px;right:22px;z-index:900;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:8px;padding:10px 16px;font-size:12px;
+  transform:translateY(60px);opacity:0;transition:all .28s ease;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:var(--accent);color:var(--accent);}
+.toast.err{border-color:var(--hot);color:var(--hot);}
+
+/* reviews tooltip area */
+.review-snippet{
+  font-size:10px;color:var(--muted);font-style:italic;
+  max-width:220px;white-space:normal;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="spin"></div><div class="load-txt">LOADING DATA…</div></div>
+<div class="toast" id="toast"></div>
+<!-- Floating demo button for easy access on mobile -->
+<button onclick="loadDemo()" style="position:fixed;bottom:22px;left:22px;z-index:400;background:var(--s2);border:1px solid var(--border2);color:var(--muted);font-family:var(--font-m);font-size:11px;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">⚡ Demo Data</button>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:4px" id="modalType">DETAIL</div>
+        <div id="modalTitle" style="font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:-.03em"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modalBg').classList.remove('show')">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    ReplyHandler
+    <span style="color:var(--muted);font-weight:400;font-size:13px">/ Command Centre</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('prospects',this)">📋 Prospects</button>
+    <button class="nav-tab" onclick="switchView('leads',this)">⚡ Qualified Leads</button>
+  </div>
+  <div class="topbar-right">
+    <div class="sync-status">
+      <div class="sync-dot idle" id="syncDot"></div>
+      <span id="syncLabel">Idle</span>
+    </div>
+    <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px" onclick="toggleConfig()">⚙ Config</button>
+  </div>
+</div>
+
+<!-- CONFIG DRAWER -->
+<div class="config-drawer" id="configDrawer" style="display:none;">
+  <div class="cfg-group">
+    <div class="cfg-label">Prospects Sheet ID</div>
+    <input class="cfg-input" id="prospectSheetId" placeholder="Sheet ID from URL" />
+  </div>
+  <div class="cfg-group" style="max-width:200px;">
+    <div class="cfg-label">Sheet Tab Name</div>
+    <input class="cfg-input" id="prospectTabName" placeholder="Sheet1" value="Sheet1" />
+  </div>
+  <div class="cfg-group">
+    <div class="cfg-label">Qualified Leads Sheet ID</div>
+    <input class="cfg-input" id="leadsSheetId" placeholder="Sheet ID (can be same)" />
+  </div>
+  <div class="cfg-group" style="max-width:180px;">
+    <div class="cfg-label">Leads Tab Name</div>
+    <input class="cfg-input" id="leadsTabName" placeholder="Qualified Leads" value="Qualified Leads" />
+  </div>
+  <div class="cfg-group" style="max-width:220px;">
+    <div class="cfg-label">Google Sheets API Key</div>
+    <input class="cfg-input" id="apiKey" placeholder="AIza..." type="password" />
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;padding-top:14px;">
+    <button class="btn btn-accent" onclick="syncAll()">↻ Sync All</button>
+    <button class="btn btn-ghost" onclick="loadDemo()">Demo</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     VIEW 1 — PROSPECT RESEARCH
+════════════════════════════════════ -->
+<div class="view active" id="view-prospects">
+
+  <div class="section-head">
+    <div class="section-title">Prospect <span>Research</span></div>
+    <div class="section-sub" id="prospectMeta">17 agencies · Kolkata real estate</div>
+  </div>
+
+  <div class="stat-strip" id="prospectStats">
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--accent)"></div>
+      <div class="stat-lbl">Total Prospects</div>
+      <div class="stat-val" id="ps-total" style="color:var(--accent)">0</div>
+      <div class="stat-hint">scraped agencies</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--green)"></div>
+      <div class="stat-lbl">Has Email</div>
+      <div class="stat-val" id="ps-email" style="color:var(--green)">0</div>
+      <div class="stat-hint">contactable</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--cold)"></div>
+      <div class="stat-lbl">Has Website</div>
+      <div class="stat-val" id="ps-web" style="color:var(--cold)">0</div>
+      <div class="stat-hint">digital presence</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--warm)"></div>
+      <div class="stat-lbl">Avg Rating</div>
+      <div class="stat-val" id="ps-rating" style="color:var(--warm)">—</div>
+      <div class="stat-hint">google maps</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--hot)"></div>
+      <div class="stat-lbl">No Digital Presence</div>
+      <div class="stat-val" id="ps-nodigital" style="color:var(--hot)">0</div>
+      <div class="stat-hint">highest pain point</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Agency List</div>
+        <div class="panel-badge" id="prospectCount">—</div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" onclick="setPFilter('all',this)">All</button>
+        <button class="fbtn" onclick="setPFilter('email',this)">Has Email</button>
+        <button class="fbtn" onclick="setPFilter('web',this)">Has Website</button>
+        <button class="fbtn" onclick="setPFilter('noweb',this)">No Digital</button>
+      </div>
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Location</th>
+              <th>Contact</th>
+              <th>Rating</th>
+              <th>Inferred Problem</th>
+            </tr>
+          </thead>
+          <tbody id="prospectTable">
+            <tr><td colspan="5"><div class="empty"><div class="empty-icon">📡</div><p>Hit <span>⚙ Config</span> in the top right, enter your Sheet ID + API Key, and click <span>Sync All</span>.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Contact Coverage</div></div>
+        <div class="chart-wrap"><div class="chart-box"><canvas id="prospectChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Problem Themes</div></div>
+        <div class="dist-list" id="problemThemes">
+          <div style="color:var(--dim);font-size:11px">No data yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     VIEW 2 — QUALIFIED LEADS
+════════════════════════════════════ -->
+<div class="view" id="view-leads">
+
+  <div class="section-head">
+    <div class="section-title">Qualified <span>Leads</span></div>
+    <div class="section-sub" id="leadsMeta">from ReplyHandler n8n workflow</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--accent)"></div>
+      <div class="stat-lbl">Total Leads</div>
+      <div class="stat-val" id="ls-total" style="color:var(--accent)">0</div>
+      <div class="stat-hint">all time</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--hot)"></div>
+      <div class="stat-lbl">🔥 Hot</div>
+      <div class="stat-val" id="ls-hot" style="color:var(--hot)">0</div>
+      <div class="stat-hint">call immediately</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--warm)"></div>
+      <div class="stat-lbl">🌤 Warm</div>
+      <div class="stat-val" id="ls-warm" style="color:var(--warm)">0</div>
+      <div class="stat-hint">nurture sequence</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:var(--cold)"></div>
+      <div class="stat-lbl">❄️ Cold</div>
+      <div class="stat-val" id="ls-cold" style="color:var(--cold)">0</div>
+      <div class="stat-hint">freebie / re-engage</div>
+    </div>
+    <div class="stat">
+      <div class="stat-accent-line" style="background:#a78bfa"></div>
+      <div class="stat-lbl">Avg Score</div>
+      <div class="stat-val" id="ls-avg" style="color:#a78bfa">—</div>
+      <div class="stat-hint">AI qualification</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Lead Pipeline</div>
+        <div class="panel-badge" id="leadsCount">—</div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" onclick="setLFilter('All',this)">All</button>
+        <button class="fbtn" onclick="setLFilter('Hot',this)">🔥 Hot</button>
+        <button class="fbtn" onclick="setLFilter('Warm',this)">🌤 Warm</button>
+        <button class="fbtn" onclick="setLFilter('Cold',this)">❄️ Cold</button>
+      </div>
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Lead</th>
+              <th>Category</th>
+              <th>Score</th>
+              <th>Action</th>
+              <th>Next Step</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTable">
+            <tr><td colspan="6"><div class="empty"><div class="empty-icon">⚡</div><p>No leads yet. <span>Configure the Qualified Leads sheet above.</span></p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Distribution</div></div>
+        <div class="chart-wrap"><div class="chart-box"><canvas id="leadsChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Score Breakdown</div></div>
+        <div class="dist-list">
+          <div class="dist-row">
+            <div class="dist-meta"><span>🔥 Hot (75–100)</span><span id="hotPct">0%</span></div>
+            <div class="dist-bar"><div class="dist-fill" id="hotBar" style="width:0%;background:var(--hot)"></div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-meta"><span>🌤 Warm (40–74)</span><span id="warmPct">0%</span></div>
+            <div class="dist-bar"><div class="dist-fill" id="warmBar" style="width:0%;background:var(--warm)"></div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-meta"><span>❄️ Cold (0–39)</span><span id="coldPct">0%</span></div>
+            <div class="dist-bar"><div class="dist-fill" id="coldBar" style="width:0%;background:var(--cold)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Recent Activity</div></div>
+        <div class="activity-list" id="recentActivity">
+          <div style="color:var(--dim);font-size:11px;padding:10px 0">No activity yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let prospects = [];
+let leads = [];
+let pFilter = 'all';
+let lFilter = 'All';
+let pChart = null;
+let lChart = null;
+
+// Your actual sheet columns (0-indexed)
+const P = {
+  name:0, location:1, website:2, phone:3, email:4,
+  rating:5, reviews:6, rev1:7, rev2:8, rev3:9, problem:10
+};
+const L = {
+  timestamp:0, leadToken:1, email:2, name:3, company:4,
+  phone:5, problem:6, budget:7, timeline:8, agreed:9,
+  score:10, category:11, reason:12, action:13,
+  signals:14, urgency:15, nextStep:16, submittedAt:17
+};
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  loadSaved();
+  // Small delay ensures canvas is fully painted before Chart.js touches it
+  setTimeout(() => {
+    loadDemo();
+  }, 120);
+});
+
+function loadSaved() {
+  const keys = ['prospectSheetId','prospectTabName','leadsSheetId','leadsTabName','apiKey'];
+  keys.forEach(k => {
+    const v = localStorage.getItem('rh_'+k);
+    if (v) document.getElementById(k).value = v;
+  });
+}
+
+function saveCfg() {
+  ['prospectSheetId','prospectTabName','leadsSheetId','leadsTabName','apiKey'].forEach(k => {
+    localStorage.setItem('rh_'+k, document.getElementById(k).value);
+  });
+}
+
+// ══════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════
+function toggleConfig() {
+  const d = document.getElementById('configDrawer');
+  d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+}
+
+function switchView(view, btn) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-'+view).classList.add('active');
+}
+
+function setSyncStatus(state, msg) {
+  const dot = document.getElementById('syncDot');
+  dot.className = 'sync-dot ' + (state === 'live' ? '' : state === 'error' ? 'error' : 'idle');
+  document.getElementById('syncLabel').textContent = msg;
+}
+
+function showLoader(on) {
+  document.getElementById('loader').classList.toggle('show', on);
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3200);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ══════════════════════════════════════
+// SYNC
+// ══════════════════════════════════════
+async function syncAll() {
+  saveCfg();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { toast('Please enter your Google Sheets API Key', 'err'); return; }
+  showLoader(true);
+  setSyncStatus('syncing', 'Syncing...');
+  try {
+    await Promise.all([syncProspects(apiKey), syncLeads(apiKey)]);
+    setSyncStatus('live', 'Live · ' + new Date().toLocaleTimeString());
+    toast('Synced successfully', 'ok');
+  } catch(e) {
+    setSyncStatus('error', 'Error');
+    toast('Sync error: ' + e.message, 'err');
+  }
+  showLoader(false);
+}
+
+async function syncProspects(apiKey) {
+  const id = document.getElementById('prospectSheetId').value.trim();
+  const tab = encodeURIComponent(document.getElementById('prospectTabName').value.trim() || 'Sheet1');
+  if (!id) return;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}?key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Prospects fetch failed');
+  const rows = (data.values || []).slice(1);
+  prospects = rows.filter(r => r[P.name]).map(r => ({
+    name:     r[P.name]    || '',
+    location: r[P.location]|| '',
+    website:  r[P.website] || '',
+    phone:    r[P.phone]   || '',
+    email:    r[P.email]   || '',
+    rating:   r[P.rating]  || '',
+    reviews:  r[P.reviews] || '',
+    rev1:     r[P.rev1]    || '',
+    rev2:     r[P.rev2]    || '',
+    rev3:     r[P.rev3]    || '',
+    problem:  r[P.problem] || '',
+  }));
+  renderProspects();
+}
+
+async function syncLeads(apiKey) {
+  const id = document.getElementById('leadsSheetId').value.trim();
+  const tab = encodeURIComponent(document.getElementById('leadsTabName').value.trim() || 'Qualified Leads');
+  if (!id) return;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}?key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Leads fetch failed');
+  const rows = (data.values || []).slice(1);
+  leads = rows.filter(r => r[L.email]).map(r => ({
+    timestamp:  r[L.timestamp]  || '',
+    leadToken:  r[L.leadToken]  || '',
+    email:      r[L.email]      || '',
+    name:       r[L.name]       || 'Unknown',
+    company:    r[L.company]    || '',
+    phone:      r[L.phone]      || '',
+    problem:    r[L.problem]    || '',
+    budget:     r[L.budget]     || '',
+    timeline:   r[L.timeline]   || '',
+    agreed:     r[L.agreed]     || '',
+    score:      parseInt(r[L.score]) || 0,
+    category:   r[L.category]   || 'Cold',
+    reason:     r[L.reason]     || '',
+    action:     r[L.action]     || '',
+    signals:    r[L.signals]    || '',
+    urgency:    r[L.urgency]    || '',
+    nextStep:   r[L.nextStep]   || '',
+    submittedAt:r[L.submittedAt]|| r[L.timestamp] || '',
+  }));
+  renderLeads();
+}
+
+// ══════════════════════════════════════
+// DEMO DATA
+// ══════════════════════════════════════
+function loadDemo() {
+  // Prospects from the real sheet
+  prospects = [
+    {name:'CT Realtor',location:'Salt Lake City Sector 1 / New Town',website:'ctrealtor.co.in',phone:'+91 97342 36920',email:'info.ctrealtor@gmail.com',rating:'4.2 / 5',reviews:'44',rev1:'CT Realtor and his team was truly exceptional.',rev2:'Mr. Chowdhury guided me at every step.',rev3:'Very poor attitude — only gives monosyllabic yes/no answers.',problem:'Inconsistent agent behaviour and weekend inaccessibility causing missed leads and poor follow-through.'},
+    {name:'Famous Hawk Realty',location:'Rajarhat (Bablatala / Kalipark)',website:'N/A',phone:'+91 79802 82146',email:'N/A',rating:'4.9 / 5',reviews:'14',rev1:'Sudip was extremely professional and polite.',rev2:'Reliable and provided honest overview with pros and cons.',rev3:'Very patient, showed all possible options.',problem:'No website or email; all leads handled informally via phone and WhatsApp — zero digital capture system.'},
+    {name:'Propstone Realty',location:'Chinar Park / Teghoria, Rajarhat',website:'propstonerealty.com',phone:'+91 90384 08007',email:'info@propstonerealty.com',rating:'4.9 / 5',reviews:'61',rev1:'Shantanu and Neetu were incredibly responsive.',rev2:'Within one month everything was sorted.',rev3:'From property visits to paperwork — handled smoothly.',problem:'Small team stretched thin; high-touch personal service risks breaking down without a CRM or follow-up automation.'},
+    {name:'NK Realtors Pvt Ltd',location:'Salt Lake Sector V (HQ) / New Town',website:'nkrealtors.com',phone:'+91 33 4016 7700',email:'sales@nkrealtors.com',rating:'4.5 / 5',reviews:'881',rev1:'Mr. Amit was exceptionally professional and patient.',rev2:'Sourav guided us and cleared all doubts.',rev3:'Very poor and unorganized — no alignment between their own team.',problem:'Internal team misalignment giving inconsistent information to buyers, eroding trust at scale.'},
+    {name:'Realtech Nirman Pvt Ltd',location:'Teghoria Main Road, Baguiati',website:'N/A',phone:'N/A',email:'N/A',rating:'4.0 / 5',reviews:'721',rev1:'Over six years of painful waiting.',rev2:'Delays and pending work needing follow-ups.',rev3:'Mayukh guided us seamlessly through the process.',problem:'Chronic project delays and weak proactive post-booking communication eroding buyer confidence at scale.'},
+    {name:'Envision Realty',location:'Ballygunge Gardens / Gariahat',website:'N/A',phone:'+91 33 4001 6261',email:'N/A',rating:'4.2 / 5',reviews:'18',rev1:'Very good experience — excellent service.',rev2:'Please do not trust these people — truly unprofessional.',rev3:'Really good experience — they know exactly how to deal.',problem:'Mixed reputation with unresolved negative client cases; no visible complaint-handling or follow-up process.'},
+    {name:'GoldBricks Property Mgmt',location:'Ballygunge Station Road, Gariahat',website:'N/A',phone:'+91 98306 74001',email:'N/A',rating:'N/A',reviews:'N/A',rev1:'N/A',rev2:'N/A',rev3:'N/A',problem:'No Google presence or reviews — operating invisibly with zero digital lead capture.'},
+    {name:'Sangai Realtors',location:'Rajarhat / Shyambazar',website:'N/A',phone:'+91 98310 33108',email:'sangairealtors@gmail.com',rating:'N/A',reviews:'N/A',rev1:'N/A',rev2:'N/A',rev3:'N/A',problem:'Minimal online visibility — relying on word-of-mouth with no system to capture or follow up inbound enquiries.'},
+    {name:'Swastik Properties',location:'Bangur Avenue, Lake Town',website:'N/A',phone:'+91 98369 66626',email:'N/A',rating:'4.6 / 5',reviews:'61',rev1:'Very good service — executed rental deal in 2 days.',rev2:'Gopal bhaiya helped get the best price.',rev3:'Very cordial and professional — trusted.',problem:'Fast executor relying entirely on one person (Gopal); no team structure means single point of failure for follow-ups.'},
+    {name:'SSK Developers',location:'New Town, Action Area 1',website:'N/A',phone:'+91 77558 81177',email:'N/A',rating:'4.5 / 5',reviews:'100',rev1:'Best thing is their office location and promoter.',rev2:'After confirming flat position they gave it to another client.',rev3:'Biplab Roy\'s behaviour turned rude when asked detailed questions.',problem:'No standardised enquiry-to-booking pipeline; deals lost and trust broken under conversion pressure.'},
+    {name:'RK Zone Realtors',location:'New Town (PS Abacus)',website:'N/A',phone:'+91 93328 39744',email:'N/A',rating:'N/A',reviews:'N/A',rev1:'N/A',rev2:'N/A',rev3:'N/A',problem:'Zero reviews and no web presence — flying blind with no inbound leads or digital funnel.'},
+    {name:'Brick Nest Realty',location:'Chinar Park / Teghoria, Rajarhat',website:'bricknestrealty.in',phone:'+91 81006 29900',email:'N/A',rating:'4.8 / 5',reviews:'102',rev1:'Sharmila was professional, approachable, and supportive throughout.',rev2:'The Brick Nest Realty team knows the city and local dynamics very well.',rev3:'We recently bought a property — they were highly trustworthy.',problem:'No public email; relies entirely on Facebook/phone — enquiries likely go unanswered outside office hours.'},
+    {name:'Plutus Realty Management',location:'Action Area 1, New Town',website:'plutusrealty.com',phone:'+91 87770 57870',email:'raunaq@plutusrealty.com',rating:'4.9 / 5',reviews:'22',rev1:'Their team was highly professional and efficient.',rev2:'Everything from loan process to legal formalities was handled.',rev3:'Raunaq guided me seamlessly through purchasing a 2 BHK.',problem:'Very low review count (22) relative to quality; minimal digital presence makes them hard to discover.'},
+    {name:'Loharuka Group',location:'Desh Bandhu Nagar / Baguiati, Rajarhat',website:'N/A',phone:'+91 96082 70270',email:'N/A',rating:'3.9 / 5',reviews:'271',rev1:'Booked a flat and paid approx ₹7.5 Lakh — no Agreement for Sale.',rev2:'Group is very slow. Handover was 6 months late.',rev3:'Song Barman helped with all queries from start through booking.',problem:'Severe follow-up gaps and delayed fulfilment after booking — buyers are left chasing the team for months.'},
+    {name:'Swarnabhumi Real Estate',location:'Ballygunge / South Kolkata',website:'N/A',phone:'N/A',email:'N/A',rating:'5.0 / 5',reviews:'N/A',rev1:'Rated 5-star on Justdial.',rev2:'N/A',rev3:'N/A',problem:'No web presence, phone, or email publicly listed — completely invisible to digital leads.'},
+    {name:'Maa Land Developers',location:'Jyangra Road, Baguiati / Hatiara',website:'N/A',phone:'+91 86479 75098',email:'N/A',rating:'3.4 / 5',reviews:'5',rev1:'House 🏠',rev2:'N/A',rev3:'N/A',problem:'Near-zero online visibility, very low rating, and no digital assets — struggling to attract any inbound enquiries.'},
+    {name:'Indicon Estates',location:'Garia Station Road, Garia',website:'N/A',phone:'N/A',email:'N/A',rating:'3.5 / 5',reviews:'2',rev1:'N/A',rev2:'N/A',rev3:'N/A',problem:'Near-zero discoverability and no contact info publicly available — likely losing all inbound enquiries.'},
+  ];
+
+  // Sample qualified leads
+  leads = [
+    {name:'Propstone Realty',email:'info@propstonerealty.com',company:'Propstone Realty',phone:'+91 90384 08007',problem:'Small team, no CRM, need follow-up automation urgently. We lose leads every weekend.',budget:'₹15k/mo',timeline:'This month',agreed:'true',score:91,category:'Hot',reason:'Clear pain, budget ready, urgent timeline, decision-maker contact.',action:'Immediate',signals:'Budget confirmed, urgent, decision maker',urgency:'High',nextStep:'Call today — demo the workflow',submittedAt:new Date(Date.now()-3600000).toISOString(),leadToken:'tok1'},
+    {name:'NK Realtors',email:'sales@nkrealtors.com',company:'NK Realtors Pvt Ltd',phone:'+91 33 4016 7700',problem:'Team misalignment, inconsistent responses. Looking into CRM options for Q2.',budget:'Flexible',timeline:'Q2',agreed:'true',score:56,category:'Warm',reason:'Real problem, exploring phase, decision needs internal alignment.',action:'Nurture',signals:'Team problem identified, flexible budget',urgency:'Medium',nextStep:'Send agency automation case study',submittedAt:new Date(Date.now()-86400000).toISOString(),leadToken:'tok2'},
+    {name:'Sangai Realtors',email:'sangairealtors@gmail.com',company:'Sangai Realtors',phone:'+91 98310 33108',problem:'Just checking what automation tools are available. Saw your email.',budget:'',timeline:'',agreed:'false',score:22,category:'Cold',reason:'No urgency, budget, or timeline. Very early exploration.',action:'Freebie',signals:'No budget, no timeline, passive interest',urgency:'Low',nextStep:'Send free guide: WhatsApp automation for realtors',submittedAt:new Date(Date.now()-172800000).toISOString(),leadToken:'tok3'},
+    {name:'CT Realtor',email:'info.ctrealtor@gmail.com',company:'CT Realtor',phone:'+91 97342 36920',problem:'Missing leads on weekends constantly. Agent inconsistency costing deals. Need solution NOW.',budget:'₹8k/mo',timeline:'2 weeks',agreed:'true',score:88,category:'Hot',reason:'High urgency, specific problem, approved budget, tight deadline.',action:'Immediate',signals:'Urgent timeline, budget stated, specific pain',urgency:'High',nextStep:'Schedule demo call within 24 hrs',submittedAt:new Date(Date.now()-7200000).toISOString(),leadToken:'tok4'},
+  ];
+
+  renderProspects();
+  renderLeads();
+  setSyncStatus('live', 'Demo loaded');
+  toast('Demo data loaded', 'ok');
+}
+
+// ══════════════════════════════════════
+// RENDER PROSPECTS
+// ══════════════════════════════════════
+function renderProspects() {
+  const hasEmail = prospects.filter(p => p.email && p.email !== 'N/A').length;
+  const hasWeb   = prospects.filter(p => p.website && p.website !== 'N/A').length;
+  const noDigital= prospects.filter(p => (p.website === 'N/A' || !p.website) && (p.email === 'N/A' || !p.email)).length;
+  const ratings  = prospects.map(p => parseFloat(p.rating.toString().split('/')[0].trim())).filter(r => !isNaN(r));
+  const avgRating= ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
+
+  document.getElementById('ps-total').textContent    = prospects.length;
+  document.getElementById('ps-email').textContent    = hasEmail;
+  document.getElementById('ps-web').textContent      = hasWeb;
+  document.getElementById('ps-rating').textContent   = avgRating;
+  document.getElementById('ps-nodigital').textContent= noDigital;
+  document.getElementById('prospectMeta').textContent= `${prospects.length} agencies · Kolkata real estate`;
+
+  // Problem themes (keyword frequency)
+  const themes = {};
+  prospects.forEach(p => {
+    if (!p.problem) return;
+    const prob = p.problem.toLowerCase();
+    if (prob.includes('digital') || prob.includes('website') || prob.includes('email') || prob.includes('online')) themes['No Digital Presence'] = (themes['No Digital Presence']||0)+1;
+    if (prob.includes('follow') || prob.includes('communication')) themes['Poor Follow-Up'] = (themes['Poor Follow-Up']||0)+1;
+    if (prob.includes('delay') || prob.includes('slow')) themes['Project Delays'] = (themes['Project Delays']||0)+1;
+    if (prob.includes('team') || prob.includes('align') || prob.includes('inconsist')) themes['Team Issues'] = (themes['Team Issues']||0)+1;
+    if (prob.includes('crm') || prob.includes('pipeline') || prob.includes('capture')) themes['No CRM/Pipeline'] = (themes['No CRM/Pipeline']||0)+1;
+  });
+  const maxTheme = Math.max(...Object.values(themes), 1);
+  document.getElementById('problemThemes').innerHTML = Object.entries(themes)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v]) => `
+      <div class="dist-row">
+        <div class="dist-meta"><span>${k}</span><span>${v} agencies</span></div>
+        <div class="dist-bar"><div class="dist-fill" style="width:${v/maxTheme*100}%;background:var(--accent2)"></div></div>
+      </div>`).join('');
+
+  // Chart
+  renderProspectChart(hasEmail, hasWeb, noDigital);
+
+  // Table
+  const filtered = pFilter === 'all' ? prospects
+    : pFilter === 'email' ? prospects.filter(p => p.email && p.email !== 'N/A')
+    : pFilter === 'web'   ? prospects.filter(p => p.website && p.website !== 'N/A')
+    : prospects.filter(p => (p.website === 'N/A' || !p.website) && (p.email === 'N/A' || !p.email));
+
+  document.getElementById('prospectCount').textContent = `${filtered.length} shown`;
+
+  if (!filtered.length) {
+    document.getElementById('prospectTable').innerHTML = `<tr><td colspan="5"><div class="empty"><div class="empty-icon">🔍</div><p>No matches.</p></div></td></tr>`;
+    return;
+  }
+
+  document.getElementById('prospectTable').innerHTML = filtered.map((p, i) => {
+    const hasE = p.email && p.email !== 'N/A';
+    const hasW = p.website && p.website !== 'N/A';
+    const ratingNum = parseFloat(p.rating.toString().split('/')[0].trim());
+    const stars = !isNaN(ratingNum) ? '★'.repeat(Math.round(ratingNum)) + '☆'.repeat(5-Math.round(ratingNum)) : '';
+
+    return `<tr onclick="openProspectModal(${prospects.indexOf(p)})">
+      <td>
+        <div class="name-cell">${esc(p.name)}</div>
+        ${hasE ? `<div class="sub-cell" style="color:var(--green)">✉ ${esc(p.email)}</div>` : '<div class="sub-cell" style="color:var(--hot)">✉ No email</div>'}
+      </td>
+      <td><div style="font-size:11px;color:var(--muted);max-width:160px;white-space:normal">${esc(p.location)}</div></td>
+      <td>
+        ${hasW ? `<a class="website-link" href="https://${esc(p.website)}" target="_blank" onclick="event.stopPropagation()">${esc(p.website)}</a>` : '<span class="na">No website</span>'}
+        ${p.phone && p.phone !== 'N/A' ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${esc(p.phone)}</div>` : ''}
+      </td>
+      <td>
+        ${!isNaN(ratingNum) ? `<div class="rating"><span class="stars" style="font-size:10px">${stars}</span><span style="font-size:11px;color:var(--warm)">${ratingNum}</span></div>
+        <div style="font-size:10px;color:var(--dim)">${esc(p.reviews)} reviews</div>` : '<span class="na">No data</span>'}
+      </td>
+      <td><div class="prob-cell">${esc(p.problem)}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderProspectChart(email, web, noDigital) {
+  const canvas = document.getElementById('prospectChart');
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  const ctx = canvas.getContext('2d');
+  pChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Has Email', 'Has Website', 'No Digital'],
+      datasets: [{
+        data: [email, web, noDigital],
+        backgroundColor: ['#00e676','#00b4d8','#ff4136'],
+        borderColor: '#090e13', borderWidth: 3, hoverOffset: 5
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: {
+        legend: { position:'bottom', labels: { color:'#4d7a99', font:{family:'DM Mono',size:11}, padding:12, boxWidth:9, boxHeight:9 } },
+        tooltip: { backgroundColor:'#0e1820', borderColor:'#1a2d3d', borderWidth:1, titleColor:'#ddeeff', bodyColor:'#4d7a99', titleFont:{family:'Clash Display',weight:'700'}, bodyFont:{family:'DM Mono',size:11} }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// RENDER LEADS
+// ══════════════════════════════════════
+function renderLeads() {
+  const total = leads.length;
+  const hot   = leads.filter(l => l.category === 'Hot').length;
+  const warm  = leads.filter(l => l.category === 'Warm').length;
+  const cold  = leads.filter(l => l.category === 'Cold').length;
+  const avg   = total ? Math.round(leads.reduce((s,l)=>s+l.score,0)/total) : 0;
+
+  document.getElementById('ls-total').textContent = total;
+  document.getElementById('ls-hot').textContent   = hot;
+  document.getElementById('ls-warm').textContent  = warm;
+  document.getElementById('ls-cold').textContent  = cold;
+  document.getElementById('ls-avg').textContent   = total ? avg : '—';
+  document.getElementById('leadsMeta').textContent= `${total} leads · from ReplyHandler workflow`;
+
+  // Score bars
+  const t = total || 1;
+  document.getElementById('hotBar').style.width  = (hot/t*100)+'%';
+  document.getElementById('warmBar').style.width = (warm/t*100)+'%';
+  document.getElementById('coldBar').style.width = (cold/t*100)+'%';
+  document.getElementById('hotPct').textContent  = Math.round(hot/t*100)+'%';
+  document.getElementById('warmPct').textContent = Math.round(warm/t*100)+'%';
+  document.getElementById('coldPct').textContent = Math.round(cold/t*100)+'%';
+
+  // Chart
+  renderLeadsChart(hot, warm, cold);
+
+  // Recent activity
+  const icons = {Hot:'🔥',Warm:'🌤',Cold:'❄️'};
+  const recent = [...leads].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,5);
+  document.getElementById('recentActivity').innerHTML = recent.length
+    ? recent.map(l => `
+        <div class="act-item">
+          <div class="act-icon">${icons[l.category]||'•'}</div>
+          <div>
+            <div class="act-name">${esc(l.name)}</div>
+            <div class="act-meta">${l.category} · ${l.action} · ${l.submittedAt ? new Date(l.submittedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--dim);font-size:11px;padding:10px 0">No activity yet.</div>';
+
+  // Table
+  const filtered = lFilter === 'All' ? leads : leads.filter(l => l.category === lFilter);
+  document.getElementById('leadsCount').textContent = `${filtered.length} of ${total}`;
+
+  if (!filtered.length) {
+    document.getElementById('leadsTable').innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚡</div><p>No ${lFilter !== 'All' ? lFilter : ''} leads yet.</p></div></td></tr>`;
+    return;
+  }
+
+  document.getElementById('leadsTable').innerHTML = filtered.map(lead => {
+    const c = lead.category;
+    const col = c === 'Hot' ? 'var(--hot)' : c === 'Warm' ? 'var(--warm)' : 'var(--cold)';
+    const date = lead.submittedAt ? new Date(lead.submittedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+    return `<tr onclick="openLeadModal(${leads.indexOf(lead)})">
+      <td>
+        <div class="name-cell">${esc(lead.name)}</div>
+        <div class="sub-cell">${esc(lead.email)}</div>
+        ${lead.company ? `<div style="font-size:10px;color:var(--dim)">${esc(lead.company)}</div>` : ''}
+      </td>
+      <td><span class="badge ${c}">${c}</span></td>
+      <td>
+        <div class="sbar-wrap">
+          <div class="sbar"><div class="sbar-fill" style="width:${lead.score}%;background:${col}"></div></div>
+          <span class="snum" style="color:${col}">${lead.score}</span>
+        </div>
+      </td>
+      <td><span class="atag ${lead.action}">${lead.action||'—'}</span></td>
+      <td><div style="max-width:200px;white-space:normal;font-size:11px;color:var(--muted);line-height:1.4">${esc(lead.nextStep||'—')}</div></td>
+      <td><div style="font-size:11px;color:var(--dim)">${date}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeadsChart(hot, warm, cold) {
+  const canvas = document.getElementById('leadsChart');
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  const ctx = canvas.getContext('2d');
+  lChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Hot', 'Warm', 'Cold'],
+      datasets: [{
+        data: [hot, warm, cold],
+        backgroundColor: ['#ff4136','#ffb700','#00b4d8'],
+        borderColor: '#090e13', borderWidth: 3, hoverOffset: 5
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: {
+        legend: { position:'bottom', labels: { color:'#4d7a99', font:{family:'DM Mono',size:11}, padding:12, boxWidth:9, boxHeight:9 } },
+        tooltip: { backgroundColor:'#0e1820', borderColor:'#1a2d3d', borderWidth:1, titleColor:'#ddeeff', bodyColor:'#4d7a99', titleFont:{family:'Clash Display',weight:'700'}, bodyFont:{family:'DM Mono',size:11} }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════
+function openProspectModal(idx) {
+  const p = prospects[idx];
+  if (!p) return;
+  document.getElementById('modalType').textContent = 'PROSPECT DETAIL';
+  document.getElementById('modalTitle').textContent = p.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+      ${p.email && p.email !== 'N/A' ? `<span class="badge prospect">✉ Email available</span>` : `<span class="badge no-web">✉ No email</span>`}
+      ${p.website && p.website !== 'N/A' ? `<span class="badge prospect">🌐 Website</span>` : `<span class="badge no-web">🌐 No website</span>`}
+    </div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="mrow-lbl">Location</div><div class="mrow-val">${esc(p.location)}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Phone</div><div class="mrow-val">${esc(p.phone)||'N/A'}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Email</div><div class="mrow-val">${esc(p.email)||'N/A'}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Website</div><div class="mrow-val">${p.website && p.website !== 'N/A' ? `<a href="https://${esc(p.website)}" target="_blank" style="color:var(--cold)">${esc(p.website)}</a>` : 'N/A'}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Rating</div><div class="mrow-val">${esc(p.rating)} (${esc(p.reviews)} reviews)</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="mrow-lbl">Inferred Problem</div><div class="mrow-val" style="color:var(--accent)">${esc(p.problem)}</div></div>
+    <hr class="mdiv">
+    <div class="mrow-lbl" style="margin-bottom:8px">CUSTOMER REVIEWS</div>
+    ${[p.rev1,p.rev2,p.rev3].filter(r=>r&&r!=='N/A').map(r=>`<div style="font-size:12px;color:var(--muted);font-style:italic;padding:8px 12px;border-left:2px solid var(--border2);margin-bottom:8px;line-height:1.5">"${esc(r)}"</div>`).join('')}
+  `;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function openLeadModal(idx) {
+  const l = leads[idx];
+  if (!l) return;
+  const col = l.category === 'Hot' ? 'var(--hot)' : l.category === 'Warm' ? 'var(--warm)' : 'var(--cold)';
+  document.getElementById('modalType').textContent = 'LEAD DETAIL';
+  document.getElementById('modalTitle').textContent = l.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+      <span class="badge ${l.category}">${l.category}</span>
+      <span class="atag ${l.action}">${l.action}</span>
+      <span style="font-family:var(--font-d);font-size:24px;font-weight:700;color:${col}">${l.score}<span style="font-size:13px;color:var(--muted)">/100</span></span>
+    </div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="mrow-lbl">Email</div><div class="mrow-val">${esc(l.email)}</div></div>
+    ${l.company?`<div class="mrow"><div class="mrow-lbl">Company</div><div class="mrow-val">${esc(l.company)}</div></div>`:''}
+    ${l.phone?`<div class="mrow"><div class="mrow-lbl">Phone</div><div class="mrow-val">${esc(l.phone)}</div></div>`:''}
+    ${l.budget?`<div class="mrow"><div class="mrow-lbl">Budget</div><div class="mrow-val">${esc(l.budget)}</div></div>`:''}
+    ${l.timeline?`<div class="mrow"><div class="mrow-lbl">Timeline</div><div class="mrow-val">${esc(l.timeline)}</div></div>`:''}
+    <div class="mrow"><div class="mrow-lbl">Agreed to Terms</div><div class="mrow-val">${l.agreed==='true'||l.agreed===true?'✅ Yes':'❌ No'}</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="mrow-lbl">Problem Statement</div><div class="mrow-val">${esc(l.problem)}</div></div>
+    <div class="mrow"><div class="mrow-lbl">AI Reason</div><div class="mrow-val">${esc(l.reason)}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Key Signals</div><div class="mrow-val">${esc(l.signals)}</div></div>
+    <div class="mrow"><div class="mrow-lbl">Urgency</div><div class="mrow-val">${esc(l.urgency)}</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="mrow-lbl">Next Step</div><div class="mrow-val" style="color:var(--accent)">${esc(l.nextStep)}</div></div>
+  `;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalBg'))
+    document.getElementById('modalBg').classList.remove('show');
+}
+
+// ══════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════
+function setPFilter(f, btn) {
+  pFilter = f;
+  document.querySelectorAll('#view-prospects .fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProspects();
+}
+
+function setLFilter(f, btn) {
+  lFilter = f;
+  document.querySelectorAll('#view-leads .fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeads();
+}
+
+// Auto-refresh every 60s if configured
+setInterval(() => {
+  const id = document.getElementById('prospectSheetId').value;
+  const key = document.getElementById('apiKey').value;
+  if (id && key) syncAll();
+}, 60000);
+</script>
+</body>
+</html>
