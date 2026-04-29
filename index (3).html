@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Lead Intelligence Dashboard — Kolkata Real Estate</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     STREAMLIT EQUIVALENT — GOOGLE SHEETS CONNECTION NOTES
+     ============================================================
+     To connect to Google Sheets in Streamlit, add this to
+     your .streamlit/secrets.toml:
+
+     [connections.gsheets]
+     spreadsheet = "YOUR_GOOGLE_SHEET_URL"
+     worksheet = "Leads"
+
+     Then in your Python file:
+       conn = st.connection("gsheets", type=GSheetsConnection)
+       df = conn.read(worksheet="Leads", ttl=60)
+
+     Install: pip install streamlit-gsheets-connection
+
+     DEPLOY ON STREAMLIT CLOUD:
+     1. Push this project to GitHub
+     2. Go to share.streamlit.io
+     3. Connect your repo
+     4. Add secrets in the Streamlit Cloud dashboard
+
+     DEPLOY ON REPLIT:
+     1. Create a new Python Repl
+     2. Add secrets in Replit's "Secrets" tab
+     3. Run: pip install streamlit streamlit-gsheets-connection
+     4. streamlit run app.py --server.port=8080
+     ============================================================ */
+
+  :root {
+    --bg-primary: #0a0d14;
+    --bg-secondary: #0f1420;
+    --bg-card: #141926;
+    --bg-card-hover: #1a2033;
+    --bg-sidebar: #0c1019;
+    --border: rgba(255,255,255,0.06);
+    --border-active: rgba(255,255,255,0.14);
+    --text-primary: #e8eaf0;
+    --text-secondary: #8892a4;
+    --text-muted: #4a5568;
+    --accent: #4f8ef7;
+    --accent-glow: rgba(79,142,247,0.15);
+
+    --hot: #ff4d6d;
+    --hot-bg: rgba(255,77,109,0.1);
+    --hot-border: rgba(255,77,109,0.25);
+    --hot-glow: rgba(255,77,109,0.2);
+
+    --warm: #ff8c42;
+    --warm-bg: rgba(255,140,66,0.1);
+    --warm-border: rgba(255,140,66,0.25);
+    --warm-glow: rgba(255,140,66,0.2);
+
+    --lukewarm: #f0c040;
+    --lukewarm-bg: rgba(240,192,64,0.1);
+    --lukewarm-border: rgba(240,192,64,0.25);
+
+    --cold: #4f8ef7;
+    --cold-bg: rgba(79,142,247,0.1);
+    --cold-border: rgba(79,142,247,0.25);
+    --cold-glow: rgba(79,142,247,0.2);
+
+    --unqualified: #9b59b6;
+    --unqualified-bg: rgba(155,89,182,0.1);
+    --unqualified-border: rgba(155,89,182,0.25);
+
+    --sidebar-w: 280px;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* ── Noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ─────────────── SIDEBAR ─────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.3);
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .logo-text span {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .last-updated {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+
+  .last-updated .lu-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .last-updated .lu-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .last-updated .lu-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* Slider */
+  .slider-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slider-header label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .slider-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border-active);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(79,142,247,0.5);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .btn-refresh {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.25);
+  }
+
+  .btn-refresh:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(79,142,247,0.4);
+  }
+
+  .btn-refresh:active { transform: translateY(0); }
+
+  .btn-refresh.spinning .refresh-icon {
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Filter section */
+  .filter-group { display: flex; flex-direction: column; gap: 8px; }
+
+  .filter-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .filter-chip {
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .chip-all {
+    border-color: var(--border-active);
+    color: var(--text-secondary);
+    background: transparent;
+  }
+
+  .chip-all.active, .chip-all:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .chip-hot {
+    border-color: var(--hot-border);
+    color: var(--hot);
+    background: transparent;
+  }
+
+  .chip-hot.active, .chip-hot:hover { background: var(--hot-bg); }
+
+  .chip-warm {
+    border-color: var(--warm-border);
+    color: var(--warm);
+    background: transparent;
+  }
+
+  .chip-warm.active, .chip-warm:hover { background: var(--warm-bg); }
+
+  .chip-lukewarm {
+    border-color: var(--lukewarm-border);
+    color: var(--lukewarm);
+    background: transparent;
+  }
+
+  .chip-lukewarm.active, .chip-lukewarm:hover { background: var(--lukewarm-bg); }
+
+  .chip-cold {
+    border-color: var(--cold-border);
+    color: var(--cold);
+    background: transparent;
+  }
+
+  .chip-cold.active, .chip-cold:hover { background: var(--cold-bg); }
+
+  /* ── Status indicator ── */
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: auto;
+    padding-top: 20px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 200;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+
+  /* ─────────────── MAIN ─────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 32px 36px;
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
+  /* Header */
+  .page-header {
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .header-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e8eaf0 30%, #8892a4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  /* ── Summary Cards ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+    animation: fadeUp 0.5s ease both;
+    cursor: default;
+  }
+
+  .card:hover {
+    border-color: var(--border-active);
+    transform: translateY(-2px);
+    background: var(--bg-card-hover);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .card-total::before { background: linear-gradient(90deg, var(--accent), #6366f1); }
+  .card-hot::before { background: linear-gradient(90deg, var(--hot), #ff6b35); }
+  .card-warm::before { background: linear-gradient(90deg, var(--warm), #ffd166); }
+  .card-cold::before { background: linear-gradient(90deg, var(--cold), #06b6d4); }
+  .card-avg::before { background: linear-gradient(90deg, #22c55e, #10b981); }
+
+  .card-icon {
+    font-size: 20px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -0.03em;
+  }
+
+  .card-total .card-value { color: var(--text-primary); }
+  .card-hot .card-value { color: var(--hot); }
+  .card-warm .card-value { color: var(--warm); }
+  .card-cold .card-value { color: var(--cold); }
+  .card-avg .card-value { color: #22c55e; }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .card-trend {
+    position: absolute;
+    bottom: 14px; right: 16px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #22c55e;
+    background: rgba(34,197,94,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── Section header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* Search */
+  .search-wrap { position: relative; }
+
+  .search-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px 9px 36px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    width: 220px;
+    transition: all 0.2s;
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+
+  .search-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeUp 0.7s ease both;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 900px;
+  }
+
+  thead {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+
+  th:hover { color: var(--text-secondary); }
+
+  th .sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.4;
+    font-size: 9px;
+  }
+
+  th.sorted { color: var(--accent); }
+  th.sorted .sort-icon { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: rowIn 0.4s ease both;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-card-hover); }
+
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  td {
+    padding: 14px 16px;
+    color: var(--text-secondary);
+    vertical-align: middle;
+    max-width: 220px;
+  }
+
+  .td-name {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .td-phone {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .td-budget {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #22c55e;
+    font-weight: 500;
+  }
+
+  /* Score cell */
+  .score-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .score-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    min-width: 50px;
+  }
+
+  .score-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  }
+
+  .score-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 28px;
+    text-align: right;
+  }
+
+  .score-hot .score-bar { background: var(--hot); }
+  .score-hot .score-num { color: var(--hot); }
+  .score-warm .score-bar { background: var(--warm); }
+  .score-warm .score-num { color: var(--warm); }
+  .score-lukewarm .score-bar { background: var(--lukewarm); }
+  .score-lukewarm .score-num { color: var(--lukewarm); }
+  .score-cold .score-bar { background: var(--cold); }
+  .score-cold .score-num { color: var(--cold); }
+  .score-unqualified .score-bar { background: var(--unqualified); }
+  .score-unqualified .score-num { color: var(--unqualified); }
+
+  /* Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+
+  .badge-hot {
+    color: var(--hot);
+    background: var(--hot-bg);
+    border-color: var(--hot-border);
+  }
+
+  .badge-hot .badge-dot { background: var(--hot); }
+
+  .badge-warm {
+    color: var(--warm);
+    background: var(--warm-bg);
+    border-color: var(--warm-border);
+  }
+
+  .badge-warm .badge-dot { background: var(--warm); }
+
+  .badge-lukewarm {
+    color: var(--lukewarm);
+    background: var(--lukewarm-bg);
+    border-color: var(--lukewarm-border);
+  }
+
+  .badge-lukewarm .badge-dot { background: var(--lukewarm); }
+
+  .badge-cold {
+    color: var(--cold);
+    background: var(--cold-bg);
+    border-color: var(--cold-border);
+  }
+
+  .badge-cold .badge-dot { background: var(--cold); }
+
+  .badge-unqualified {
+    color: var(--unqualified);
+    background: var(--unqualified-bg);
+    border-color: var(--unqualified-border);
+  }
+
+  .badge-unqualified .badge-dot { background: var(--unqualified); }
+
+  /* Reasoning cell */
+  .reasoning-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    max-width: 200px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  /* Next action */
+  .action-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  /* Source tag */
+  .source-tag {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Progress ring for avg score */
+  .score-ring-wrap {
+    position: absolute;
+    right: 16px; top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-active);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+      box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+    }
+
+    .main {
+      margin-left: 0;
+      padding: 20px 16px 20px 16px;
+      padding-top: 60px;
+    }
+
+    .sidebar-toggle { display: flex; }
+
+    .search-input { width: 100%; }
+
+    .cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { padding: 14px; }
+    .card-value { font-size: 26px; }
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+
+  .sidebar-overlay.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar toggle (mobile) -->
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar" id="sidebar">
+
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏙️</div>
+    <div class="logo-text">
+      Lead Intelligence
+      <span>Kolkata Real Estate</span>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Last Updated -->
+  <div>
+    <div class="sidebar-section-label">Live Status</div>
+    <div class="last-updated">
+      <div class="lu-label">Last Updated</div>
+      <div class="lu-time" id="lastTime">--:--:--</div>
+      <div class="lu-date" id="lastDate">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Auto Refresh -->
+  <div>
+    <div class="sidebar-section-label">Auto Refresh</div>
+    <div class="slider-wrap">
+      <div class="slider-header">
+        <label>Refresh Interval</label>
+        <span class="slider-value" id="sliderVal">5 min</span>
+      </div>
+      <input type="range" min="1" max="30" value="5" id="refreshSlider"
+             oninput="document.getElementById('sliderVal').textContent = this.value + ' min'; setAutoRefresh(this.value)">
+    </div>
+  </div>
+
+  <button class="btn-refresh" id="refreshBtn" onclick="refreshData()">
+    <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+    </svg>
+    Refresh Now
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Filters -->
+  <div>
+    <div class="sidebar-section-label">Filter by Category</div>
+    <div class="filter-chip-row">
+      <span class="filter-chip chip-all active" onclick="filterCategory('All', this)">All</span>
+      <span class="filter-chip chip-hot" onclick="filterCategory('Hot', this)">🔥 Hot</span>
+      <span class="filter-chip chip-warm" onclick="filterCategory('Warm', this)">☀️ Warm</span>
+      <span class="filter-chip chip-lukewarm" onclick="filterCategory('Lukewarm', this)">🌤 Tepid</span>
+      <span class="filter-chip chip-cold" onclick="filterCategory('Cold', this)">❄️ Cold</span>
+    </div>
+  </div>
+
+  <!-- Notes for developer -->
+  <div style="background: rgba(79,142,247,0.06); border: 1px solid rgba(79,142,247,0.15); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+    <div style="color: var(--accent); font-weight: 600; margin-bottom: 6px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;">⚙️ Dev Note</div>
+    Connect Google Sheets via <code style="color: var(--accent); font-size: 10px;">st.connection("gsheets")</code> in Streamlit. See code comments for secrets setup.
+  </div>
+
+  <div class="status-dot">
+    <span class="dot"></span>
+    Dashboard Active · AI Scoring On
+  </div>
+
+</aside>
+
+<!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-eyebrow">AI-Powered · Real-Time Intelligence</div>
+    <h1 class="page-title">Buyer Lead Intelligence<br>Dashboard</h1>
+    <p class="page-subtitle">Automated scoring via Gemini AI · Kolkata Real Estate Market · <span id="totalDisplay" style="color: var(--accent);">0</span> leads tracked</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="cards-grid" id="cardsGrid">
+    <div class="card card-total" style="animation-delay:0.05s">
+      <span class="card-icon">📊</span>
+      <div class="card-value" id="cTotal">0</div>
+      <div class="card-label">Total Leads</div>
+    </div>
+    <div class="card card-hot" style="animation-delay:0.1s">
+      <span class="card-icon">🔥</span>
+      <div class="card-value" id="cHot">0</div>
+      <div class="card-label">Hot Leads</div>
+    </div>
+    <div class="card card-warm" style="animation-delay:0.15s">
+      <span class="card-icon">☀️</span>
+      <div class="card-value" id="cWarm">0</div>
+      <div class="card-label">Warm Leads</div>
+    </div>
+    <div class="card card-cold" style="animation-delay:0.2s">
+      <span class="card-icon">❄️</span>
+      <div class="card-value" id="cCold">0</div>
+      <div class="card-label">Cold Leads</div>
+    </div>
+    <div class="card card-avg" style="animation-delay:0.25s">
+      <span class="card-icon">⚡</span>
+      <div class="card-value" id="cAvg">—</div>
+      <div class="card-label">Avg Score</div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="section-header">
+    <div class="section-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      Lead Data Table
+      <span class="section-count" id="rowCount">0 rows</span>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" class="search-input" placeholder="Search leads..." id="searchInput" oninput="renderTable()">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="leadsTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('name')">Buyer Name <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('phone')">Phone <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('budget')">Budget <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('location')">Location Wanted <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('propertyType')">Property Type <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('source')">Source <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('score')" class="sorted">Score <span class="sort-icon">↓</span></th>
+          <th onclick="sortBy('category')">Category <span class="sort-icon">⇅</span></th>
+          <th>Reasoning</th>
+          <th>Next Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="10"><div class="empty-state"><div class="empty-icon">⏳</div><p>Loading lead data...</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastMsg">Data refreshed successfully</span>
+</div>
+
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+<script>
+/*
+ * ============================================================
+ * STREAMLIT PYTHON EQUIVALENT (app.py)
+ * ============================================================
+ *
+ * import streamlit as st
+ * import pandas as pd
+ * from streamlit_gsheets import GSheetsConnection
+ * from datetime import datetime
+ * import time
+ *
+ * st.set_page_config(
+ *     page_title="Buyer Lead Intelligence Dashboard - Kolkata Real Estate",
+ *     page_icon="🏙️",
+ *     layout="wide"
+ * )
+ *
+ * # ── Google Sheets Connection ──
+ * # Add to .streamlit/secrets.toml:
+ * # [connections.gsheets]
+ * # spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID"
+ * # worksheet = "Leads"
+ * #
+ * # Install: pip install streamlit-gsheets-connection
+ *
+ * @st.cache_data(ttl=300)
+ * def load_data():
+ *     try:
+ *         conn = st.connection("gsheets", type=GSheetsConnection)
+ *         df = conn.read(worksheet="Leads", usecols=list(range(10)), ttl=300)
+ *         df = df.dropna(how="all")
+ *         return df if not df.empty else get_sample_data()
+ *     except Exception:
+ *         return get_sample_data()
+ *
+ * def get_sample_data():
+ *     # Returns sample Kolkata leads DataFrame
+ *     pass
+ *
+ * # Sidebar
+ * with st.sidebar:
+ *     st.image("logo.png")
+ *     st.write(f"**Last Updated:** {datetime.now().strftime('%H:%M:%S')}")
+ *     interval = st.slider("Auto-refresh (min)", 1, 30, 5)
+ *     if st.button("🔄 Refresh Now"):
+ *         st.cache_data.clear()
+ *         st.rerun()
+ *
+ * df = load_data()
+ *
+ * # Cards
+ * col1, col2, col3, col4, col5 = st.columns(5)
+ * col1.metric("Total Leads", len(df))
+ * # ... etc
+ *
+ * # Table
+ * st.dataframe(df, use_container_width=True)
+ *
+ * # Auto-refresh
+ * time.sleep(interval * 60)
+ * st.rerun()
+ * ============================================================
+ */
+
+// ── Sample Kolkata Lead Data ──
+const SAMPLE_DATA = [
+  {
+    name: "Arjun Chakraborty",
+    phone: "+91 98300 12345",
+    budget: "₹85L–1.2Cr",
+    location: "Salt Lake Sector V",
+    propertyType: "3 BHK Flat",
+    source: "99acres",
+    score: 92,
+    category: "Hot",
+    reasoning: "High budget, specific location requirement, timeline within 2 months. Very active inquiry.",
+    nextAction: "📞 Call within 24hrs"
+  },
+  {
+    name: "Priya Banerjee",
+    phone: "+91 97480 67890",
+    budget: "₹45L–60L",
+    location: "Rajarhat New Town",
+    propertyType: "2 BHK Flat",
+    source: "MagicBricks",
+    score: 88,
+    category: "Hot",
+    reasoning: "Pre-approved home loan, ready to visit sites this weekend. Budget well-defined.",
+    nextAction: "📅 Schedule site visit"
+  },
+  {
+    name: "Subhajit Das",
+    phone: "+91 99030 44321",
+    budget: "₹1.5Cr–2Cr",
+    location: "Alipore / Ballygunge",
+    propertyType: "Duplex / Penthouse",
+    source: "Facebook Ad",
+    score: 85,
+    category: "Hot",
+    reasoning: "HNI client looking for premium property. Has viewed 3 listings. Decision in 6 weeks.",
+    nextAction: "🏠 Premium property tour"
+  },
+  {
+    name: "Meghna Ghosh",
+    phone: "+91 91630 55678",
+    budget: "₹60L–80L",
+    location: "Garia / Narendrapur",
+    propertyType: "3 BHK Flat",
+    source: "Housing.com",
+    score: 72,
+    category: "Warm",
+    reasoning: "Actively searching, has budget clarity. Timeline is 3–4 months. Comparing 2 projects.",
+    nextAction: "📋 Send project comparison"
+  },
+  {
+    name: "Rohit Saha",
+    phone: "+91 84820 33210",
+    budget: "₹30L–45L",
+    location: "Howrah / Shibpur",
+    propertyType: "2 BHK Flat",
+    source: "Google Ads",
+    score: 68,
+    category: "Warm",
+    reasoning: "First-time buyer, interested in affordable segment. Needs EMI guidance. Timeline: 5 months.",
+    nextAction: "🏦 Share loan calculator"
+  },
+  {
+    name: "Tanisha Roy",
+    phone: "+91 70459 21098",
+    budget: "₹90L–1.1Cr",
+    location: "EM Bypass / Kasba",
+    propertyType: "3 BHK Flat",
+    source: "Instagram",
+    score: 65,
+    category: "Warm",
+    reasoning: "Couple relocating from Delhi, serious inquiry. Both working professionals. Need 6 months.",
+    nextAction: "📧 Send area guide PDF"
+  },
+  {
+    name: "Anirban Mukherjee",
+    phone: "+91 98740 87654",
+    budget: "₹2Cr–3Cr",
+    location: "Golf Green / Tollygunge",
+    propertyType: "Independent Villa",
+    source: "Referral",
+    score: 55,
+    category: "Lukewarm",
+    reasoning: "High budget but very specific requirements. May take 8–12 months. Exploring options.",
+    nextAction: "📸 Send villa catalogue"
+  },
+  {
+    name: "Sreya Chatterjee",
+    phone: "+91 93390 12876",
+    budget: "₹20L–35L",
+    location: "Barasat / Madhyamgram",
+    propertyType: "1 BHK / Studio",
+    source: "WhatsApp Campaign",
+    score: 45,
+    category: "Lukewarm",
+    reasoning: "Budget is tight, exploring first home. Limited info provided. Timeline unclear.",
+    nextAction: "📱 Send affordable options"
+  },
+  {
+    name: "Debashis Paul",
+    phone: "+91 80130 44567",
+    budget: "₹1Cr–1.5Cr",
+    location: "Sector I, Salt Lake",
+    propertyType: "4 BHK Flat",
+    source: "Walk-in",
+    score: 38,
+    category: "Cold",
+    reasoning: "Investor mindset, not urgent. Looking for rental yield. Very long-term decision horizon.",
+    nextAction: "📊 Send ROI analysis"
+  },
+  {
+    name: "Koushik Sen",
+    phone: "+91 77770 98321",
+    budget: "Not specified",
+    location: "Anywhere in Kolkata",
+    propertyType: "Not specified",
+    source: "Cold Call",
+    score: 12,
+    category: "Unqualified",
+    reasoning: "Very low information. Only name and phone available. No budget, location or timeline.",
+    nextAction: "📝 Send intake form"
+  },
+  {
+    name: "Rituparna Dutta",
+    phone: "+91 99990 00123",
+    budget: "₹50L–70L",
+    location: "New Town Action Area 2",
+    propertyType: "2/3 BHK Flat",
+    source: "99acres",
+    score: 30,
+    category: "Cold",
+    reasoning: "Interested but no urgency. Waiting for price correction. Timeline 1+ year.",
+    nextAction: "📅 Add to drip campaign"
+  },
+  {
+    name: "Amit Bose",
+    phone: "+91 98310 76543",
+    budget: "₹70L–95L",
+    location: "Behala / Joka",
+    propertyType: "3 BHK Flat",
+    source: "MagicBricks",
+    score: 60,
+    category: "Warm",
+    reasoning: "Decent interest with budget clarity. Family decision-making. Needs 3–4 months.",
+    nextAction: "🤝 Family meet & greet"
+  }
+];
+
+// ── State ──
+let allLeads = [];
+let filteredLeads = [];
+let currentFilter = 'All';
+let sortKey = 'score';
+let sortDir = -1;
+let autoRefreshTimer = null;
+
+// ── Initialise ──
+function init() {
+  loadLeads();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setAutoRefresh(5);
+}
+
+function loadLeads() {
+  /*
+   * In Streamlit this would be:
+   *   conn = st.connection("gsheets", type=GSheetsConnection)
+   *   df = conn.read(worksheet="Leads", ttl=300)
+   *
+   * Here we simulate a Google Sheets fetch.
+   * Replace this function's body with a real API call
+   * if embedding in a web app with a backend.
+   */
+  allLeads = [...SAMPLE_DATA];
+  filteredLeads = [...allLeads];
+  updateCards();
+  renderTable();
+  document.getElementById('totalDisplay').textContent = allLeads.length;
+}
+
+// ── Refresh ──
+function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+
+  setTimeout(() => {
+    loadLeads();
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+    showToast('✅ Data refreshed from Google Sheets');
+  }, 1200);
+}
+
+function setAutoRefresh(minutes) {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    refreshData();
+    showToast('🔄 Auto-refreshed · Next in ' + minutes + ' min');
+  }, minutes * 60 * 1000);
+}
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('lastTime').textContent =
+    now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('lastDate').textContent =
+    now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ── Cards ──
+function updateCards() {
+  const hot = allLeads.filter(l => l.category === 'Hot').length;
+  const warm = allLeads.filter(l => l.category === 'Warm').length;
+  const cold = allLeads.filter(l => l.category === 'Cold').length;
+  const avg = Math.round(allLeads.reduce((s, l) => s + l.score, 0) / (allLeads.length || 1));
+
+  animateCount('cTotal', allLeads.length);
+  animateCount('cHot', hot);
+  animateCount('cWarm', warm);
+  animateCount('cCold', cold);
+  document.getElementById('cAvg').textContent = avg;
+  document.getElementById('totalDisplay').textContent = allLeads.length;
+}
+
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt(el.textContent) || 0;
+  const duration = 600;
+  const startTime = performance.now();
+
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// ── Filter ──
+function filterCategory(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+// ── Sort ──
+function sortBy(key) {
+  if (sortKey === key) {
+    sortDir *= -1;
+  } else {
+    sortKey = key;
+    sortDir = key === 'score' ? -1 : 1;
+  }
+
+  document.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sorted');
+    th.querySelector('.sort-icon').textContent = '⇅';
+  });
+
+  const headers = { name: 0, phone: 1, budget: 2, location: 3, propertyType: 4, source: 5, score: 6, category: 7 };
+  const idx = headers[key];
+  if (idx !== undefined) {
+    const ths = document.querySelectorAll('th');
+    ths[idx].classList.add('sorted');
+    ths[idx].querySelector('.sort-icon').textContent = sortDir === 1 ? '↑' : '↓';
+  }
+  renderTable();
+}
+
+// ── Render Table ──
+function renderTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+
+  let data = allLeads.filter(l => {
+    const matchCat = currentFilter === 'All' || l.category === currentFilter;
+    const matchSearch = !search ||
+      l.name.toLowerCase().includes(search) ||
+      l.location.toLowerCase().includes(search) ||
+      l.propertyType.toLowerCase().includes(search) ||
+      l.source.toLowerCase().includes(search) ||
+      l.category.toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+
+  // Sort
+  data.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+
+  filteredLeads = data;
+  document.getElementById('rowCount').textContent = data.length + ' row' + (data.length !== 1 ? 's' : '');
+
+  const tbody = document.getElementById('tableBody');
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p>No leads match your filters</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((l, i) => {
+    const cat = l.category.toLowerCase().replace(' ', '-');
+    const scoreCls = cat === 'hot' ? 'score-hot'
+                   : cat === 'warm' ? 'score-warm'
+                   : cat === 'lukewarm' ? 'score-lukewarm'
+                   : cat === 'cold' ? 'score-cold'
+                   : 'score-unqualified';
+
+    const badgeCls = 'badge-' + (cat === 'unqualified' ? 'unqualified' : cat);
+
+    const actionIcon = l.nextAction.split(' ')[0];
+    const actionText = l.nextAction.substring(actionIcon.length + 1);
+
+    return `<tr style="animation-delay:${i * 0.04}s">
+      <td class="td-name">${l.name}</td>
+      <td class="td-phone">${l.phone}</td>
+      <td class="td-budget">${l.budget}</td>
+      <td>${l.location}</td>
+      <td>${l.propertyType}</td>
+      <td><span class="source-tag">${l.source}</span></td>
+      <td>
+        <div class="score-cell ${scoreCls}">
+          <span class="score-num">${l.score}</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar" style="width:${l.score}%"></div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="badge ${badgeCls}">
+          <span class="badge-dot"></span>
+          ${l.category}
+        </span>
+      </td>
+      <td><div class="reasoning-text">${l.reasoning}</div></td>
+      <td><span class="action-tag">${actionIcon} ${actionText}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ── Sidebar Toggle (mobile) ──
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+
+// ── Boot ──
+init();
+</script>
+</body>
+</html>
