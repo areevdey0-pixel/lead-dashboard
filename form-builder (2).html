@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Builder — Kolkata Real Estate</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:#f0ede8;color:#1a1208;min-height:100vh;display:flex;overflow-x:hidden;}
+
+/* ══ SIDEBAR ══ */
+#sp{width:320px;min-width:300px;max-width:320px;background:#fff;border-right:1px solid #e8ddd0;height:100vh;overflow-y:auto;position:sticky;top:0;display:flex;flex-direction:column;z-index:10;flex-shrink:0;}
+.ph{padding:18px 20px 14px;border-bottom:1px solid #e8ddd0;background:#fff;position:sticky;top:0;z-index:5;}
+.pt{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:#1a1208;margin-bottom:1px;}
+.ps{font-size:11px;color:#8a7060;}
+.pb{padding:14px 20px 28px;flex:1;}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:14px;background:#f5f2ee;border-radius:8px;padding:3px;}
+.tab{flex:1;padding:5px 3px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#8a7060;border-radius:6px;transition:all 0.15s;letter-spacing:0.02em;}
+.tab:hover{color:#1a1208;}
+.tab.active{background:#fff;color:#1a1208;box-shadow:0 1px 4px rgba(26,18,8,0.1);}
+.tp{display:none;}
+.tp.active{display:block;}
+
+/* Fields */
+.fg{margin-bottom:11px;}
+.fg label{display:block;font-size:10.5px;font-weight:600;color:#8a7060;margin-bottom:4px;letter-spacing:0.06em;text-transform:uppercase;}
+.fg input[type=text],.fg input[type=url],.fg input[type=tel],.fg input[type=email],.fg textarea,.fg select{width:100%;background:#faf8f5;border:1.5px solid #e8ddd0;border-radius:8px;padding:7px 10px;font-family:'Outfit',sans-serif;font-size:13px;color:#1a1208;outline:none;transition:border-color 0.2s;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:#c8945a;background:#fff;}
+.fg textarea{min-height:56px;resize:vertical;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* Color rows */
+.cr{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.cr .cl{font-size:12px;color:#4a3828;flex:1;min-width:0;}
+.cr input[type=color]{width:32px;height:26px;border-radius:5px;border:1.5px solid #e8ddd0;cursor:pointer;padding:2px;background:none;}
+.cr .hi{width:74px;font-size:11px;font-family:'Courier New',monospace;padding:5px 7px;border:1.5px solid #e8ddd0;border-radius:6px;background:#faf8f5;color:#1a1208;outline:none;}
+.cr .hi:focus{border-color:#c8945a;}
+.sl{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b09070;margin:13px 0 8px;}
+
+/* Chips editor */
+.cw{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.ct{display:flex;align-items:center;gap:3px;padding:4px 10px;border-radius:100px;border:1px solid #e8ddd0;background:#faf8f5;font-size:12px;color:#4a3828;}
+.cr2{background:none;border:none;cursor:pointer;color:#aaa;font-size:14px;line-height:1;padding:0;margin-left:1px;}
+.cr2:hover{color:#e74c3c;}
+.car{display:flex;gap:6px;margin-top:8px;}
+.car input{flex:1;font-size:12px;padding:6px 9px;border:1.5px solid #e8ddd0;border-radius:7px;background:#faf8f5;outline:none;color:#1a1208;font-family:'Outfit',sans-serif;}
+.car input:focus{border-color:#c8945a;}
+.car button{padding:6px 12px;background:#c8945a;color:white;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;}
+.car button:hover{background:#b07840;}
+
+/* Info box */
+.ib{background:#fdf5ec;border:1px solid #f0d8b0;border-radius:8px;padding:10px 12px;font-size:11px;color:#7a5530;line-height:1.6;margin-bottom:10px;}
+.ib strong{color:#5a3a1a;}
+
+/* Download button */
+.dlb{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:linear-gradient(135deg,#1a1208,#3d2a14);color:#e8b87a;border:none;border-radius:10px;font-family:'Fraunces',serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:16px;box-shadow:0 4px 16px rgba(26,18,8,0.2);}
+.dlb:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(26,18,8,0.28);}
+.dln{font-size:11px;color:#22c55e;text-align:center;margin-top:8px;display:none;font-weight:500;}
+
+/* ══ PREVIEW ══ */
+#pw{flex:1;overflow-y:auto;background:#e8e4de;position:relative;}
+.ptb{background:#fff;border-bottom:1px solid #e8ddd0;padding:10px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;}
+.ptb span{font-size:12px;color:#8a7060;font-weight:500;}
+.pb2{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;}
+.pd{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:blink 1.5s ease infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.dtg{display:flex;gap:4px;margin-left:auto;}
+.db{padding:5px 10px;border:1px solid #e8ddd0;border-radius:6px;background:#fff;font-size:11px;color:#8a7060;cursor:pointer;transition:all 0.15s;}
+.db.active{background:#1a1208;color:#e8b87a;border-color:#1a1208;}
+#pf2{width:100%;min-height:calc(100vh - 48px);border:none;display:block;}
+
+@media(max-width:860px){
+  body{flex-direction:column;}
+  #sp{width:100%;max-width:100%;min-width:0;height:auto;position:relative;border-right:none;border-bottom:1px solid #e8ddd0;}
+  #pw{min-height:600px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ SETTINGS PANEL ══════════ -->
+<aside id="sp">
+  <div class="ph">
+    <div class="pt">🎨 Form Builder</div>
+    <div class="ps">Edit → live preview updates → download</div>
+  </div>
+  <div class="pb">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="swTab('agency',this)">Agency</button>
+      <button class="tab" onclick="swTab('colors',this)">Colors</button>
+      <button class="tab" onclick="swTab('content',this)">Content</button>
+      <button class="tab" onclick="swTab('locs',this)">Areas</button>
+      <button class="tab" onclick="swTab('hook',this)">Webhook</button>
+    </div>
+
+    <!-- Agency -->
+    <div class="tp active" id="tab-agency">
+      <div class="two">
+        <div class="fg"><label>Agency Name</label><input type="text" id="f-name" value="Kolkata Home Finder" oninput="lu()"></div>
+        <div class="fg"><label>City</label><input type="text" id="f-city" value="Kolkata" oninput="lu()"></div>
+      </div>
+      <div class="fg"><label>Tagline</label><input type="text" id="f-tag" value="Trusted Real Estate Since 2012" oninput="lu()"></div>
+      <div class="two">
+        <div class="fg"><label>Phone</label><input type="tel" id="f-phone" value="+91 98300 00000" oninput="lu()"></div>
+        <div class="fg"><label>Email</label><input type="email" id="f-email" value="hello@youragency.com" oninput="lu()"></div>
+      </div>
+      <div class="fg"><label>Logo URL (blank = emoji)</label><input type="url" id="f-logo" value="" placeholder="https://…/logo.png" oninput="lu()"></div>
+      <div class="fg"><label>Emoji Icon</label><input type="text" id="f-icon" value="🏙️" oninput="lu()"></div>
+    </div>
+
+    <!-- Colors -->
+    <div class="tp" id="tab-colors">
+      <div class="sl">Brand</div>
+      <div class="cr"><span class="cl">Primary (chips, progress)</span><input type="color" id="cp-pr" value="#c8945a" oninput="sc('pr',this.value)"><input class="hi" id="ch-pr" value="#c8945a" oninput="sh('pr',this.value)"></div>
+      <div class="cr"><span class="cl">Accent / light gold</span><input type="color" id="cp-ac" value="#e8b87a" oninput="sc('ac',this.value)"><input class="hi" id="ch-ac" value="#e8b87a" oninput="sh('ac',this.value)"></div>
+      <div class="cr"><span class="cl">Dark (submit button)</span><input type="color" id="cp-dk" value="#1a1208" oninput="sc('dk',this.value)"><input class="hi" id="ch-dk" value="#1a1208" oninput="sh('dk',this.value)"></div>
+      <div class="sl">Page</div>
+      <div class="cr"><span class="cl">Background</span><input type="color" id="cp-bg" value="#fdf8f2" oninput="sc('bg',this.value)"><input class="hi" id="ch-bg" value="#fdf8f2" oninput="sh('bg',this.value)"></div>
+      <div class="cr"><span class="cl">Body text</span><input type="color" id="cp-tx" value="#2d1f0e" oninput="sc('tx',this.value)"><input class="hi" id="ch-tx" value="#2d1f0e" oninput="sh('tx',this.value)"></div>
+      <div class="cr"><span class="cl">Muted text</span><input type="color" id="cp-mu" value="#8a7060" oninput="sc('mu',this.value)"><input class="hi" id="ch-mu" value="#8a7060" oninput="sh('mu',this.value)"></div>
+      <div class="cr"><span class="cl">Border</span><input type="color" id="cp-br" value="#e8ddd0" oninput="sc('br',this.value)"><input class="hi" id="ch-br" value="#e8ddd0" oninput="sh('br',this.value)"></div>
+      <div class="ib" style="margin-top:10px;">Click the swatch <strong>or</strong> type hex directly e.g. <strong>#c8945a</strong></div>
+    </div>
+
+    <!-- Content -->
+    <div class="tp" id="tab-content">
+      <div class="fg"><label>Form Title (\n = line break)</label><input type="text" id="f-title" value="Help Us Find Your\nPerfect Property" oninput="lu()"></div>
+      <div class="fg"><label>Subtitle</label><input type="text" id="f-sub" value="Takes 60 seconds · No spam · 100% free" oninput="lu()"></div>
+      <div class="fg"><label>Submit Button Text</label><input type="text" id="f-btn" value="Find My Perfect Property" oninput="lu()"></div>
+      <div class="fg"><label>Thank-You Message</label><textarea id="f-ty">Thank you! Our team will now find the best matches for you.</textarea></div>
+    </div>
+
+    <!-- Locations -->
+    <div class="tp" id="tab-locs">
+      <div class="ib">These appear as tappable chips in <strong>Question 4</strong>.</div>
+      <div class="cw" id="chips-ed"></div>
+      <div class="car">
+        <input type="text" id="nc" placeholder="Add area…" onkeydown="if(event.key==='Enter'){event.preventDefault();addChip();}">
+        <button onclick="addChip()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Webhook -->
+    <div class="tp" id="tab-hook">
+      <div class="ib"><strong>n8n Webhook URL:</strong><br>n8n → Webhook node → Copy Production URL → paste below</div>
+      <div class="fg"><label>Webhook URL</label><input type="url" id="f-wh" value="https://your-n8n-webhook.com/customer-form" oninput="lu()"></div>
+    </div>
+
+    <button class="dlb" onclick="dlForm()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download index.html
+    </button>
+    <p class="dln" id="dln">✅ Downloaded! Upload to GitHub and delete the old file.</p>
+
+  </div>
+</aside>
+
+<!-- ══════════ LIVE PREVIEW ══════════ -->
+<div id="pw">
+  <div class="ptb">
+    <span>Live Preview</span>
+    <div class="pb2"><span class="pd"></span> Updates as you type</div>
+    <div class="dtg">
+      <button class="db active" onclick="setDev('desktop',this)">🖥 Desktop</button>
+      <button class="db" onclick="setDev('mobile',this)">📱 Mobile</button>
+    </div>
+  </div>
+  <iframe id="pf2" title="Form Preview"></iframe>
+</div>
+
+<!-- ══════════ JAVASCRIPT ══════════ -->
+<script>
+const locs = ["New Town","Salt Lake","Rajarhat","Hatiara","Alipore","Ballygunge","Garia","Howrah","EM Bypass","Tollygunge","Anywhere"];
+let dbt = null;
+
+function swTab(n, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tp').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + n).classList.add('active');
+  el.classList.add('active');
+}
+
+function sc(k, v) { document.getElementById('ch-' + k).value = v; lu(); }
+function sh(k, v) { if (/^#[0-9a-fA-F]{6}$/.test(v)) { document.getElementById('cp-' + k).value = v; lu(); } }
+
+function renderChips() {
+  document.getElementById('chips-ed').innerHTML = locs.map((l, i) =>
+    `<span class="ct">${l}<button class="cr2" onclick="remChip(${i})">×</button></span>`
+  ).join('');
+}
+function remChip(i) { locs.splice(i, 1); renderChips(); lu(); }
+function addChip() {
+  const inp = document.getElementById('nc');
+  const v = inp.value.trim();
+  if (v && !locs.includes(v)) { locs.push(v); inp.value = ''; renderChips(); lu(); }
+}
+
+function lu() { clearTimeout(dbt); dbt = setTimeout(rp, 130); }
+
+function gv(id) { return (document.getElementById(id) || {}).value || ''; }
+
+function getCfg() {
+  return {
+    name:    gv('f-name')  || 'Kolkata Home Finder',
+    tag:     gv('f-tag')   || 'Trusted Real Estate Since 2012',
+    logo:    gv('f-logo')  || '',
+    icon:    gv('f-icon')  || '🏙️',
+    phone:   gv('f-phone') || '+91 98300 00000',
+    email:   gv('f-email') || 'hello@youragency.com',
+    pr:      gv('ch-pr')   || '#c8945a',
+    ac:      gv('ch-ac')   || '#e8b87a',
+    dk:      gv('ch-dk')   || '#1a1208',
+    bg:      gv('ch-bg')   || '#fdf8f2',
+    tx:      gv('ch-tx')   || '#2d1f0e',
+    mu:      gv('ch-mu')   || '#8a7060',
+    border:  gv('ch-br')   || '#e8ddd0',
+    title:   gv('f-title') || 'Help Us Find Your\\nPerfect Property',
+    sub:     gv('f-sub')   || 'Takes 60 seconds · No spam · 100% free',
+    btn:     gv('f-btn')   || 'Find My Perfect Property',
+    ty:      (document.getElementById('f-ty') || {}).value || 'Thank you! Our team will find the best matches for you.',
+    wh:      gv('f-wh')    || 'https://your-n8n-webhook.com/customer-form',
+    locs:    [...locs],
+    city:    gv('f-city')  || 'Kolkata',
+    year:    new Date().getFullYear(),
+  };
+}
+
+function setDev(m, el) {
+  document.querySelectorAll('.db').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const f = document.getElementById('pf2');
+  const pw = document.getElementById('pw');
+  if (m === 'mobile') {
+    f.style.cssText = 'max-width:390px;margin:20px auto;border:8px solid #1a1208;border-radius:30px;box-shadow:0 20px 60px rgba(26,18,8,0.3);display:block;min-height:calc(100vh - 88px);width:100%;';
+    pw.style.background = '#c8b89a';
+    pw.style.padding = '0 20px 40px';
+  } else {
+    f.style.cssText = 'width:100%;min-height:calc(100vh - 48px);border:none;display:block;';
+    pw.style.background = '#e8e4de';
+    pw.style.padding = '';
+  }
+}
+
+/* ══ BUILD FORM HTML ══ */
+function buildHTML(cfg) {
+  const logoH = cfg.logo
+    ? `<img src="${cfg.logo}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">`
+    : cfg.icon;
+  const titleH = cfg.title.replace(/\\n/g, '<br>');
+  const chipsH = cfg.locs.map(l =>
+    `<span class="chip" data-val="${l}" onclick="toggleChip(this)">${l}</span>`
+  ).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${cfg.title.replace(/\\n/g,' ')} – ${cfg.name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:${cfg.pr};--a:${cfg.ac};--d:${cfg.dk};--bg:${cfg.bg};--tx:${cfg.tx};--mu:${cfg.mu};--br:${cfg.border};}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 60% at 50% -5%,rgba(200,148,90,0.09) 0%,transparent 65%);pointer-events:none;z-index:0;}
+.pt{height:3px;background:var(--br);border-radius:2px;overflow:hidden;}
+.pf{height:100%;background:linear-gradient(90deg,var(--p),var(--a));border-radius:2px;width:0%;transition:width 0.55s cubic-bezier(.4,0,.2,1);}
+.sc{background:#fff;border:1.5px solid var(--br);border-radius:20px;padding:22px 22px 26px;box-shadow:0 2px 14px rgba(45,31,14,0.05);position:relative;overflow:hidden;transition:box-shadow 0.3s,border-color 0.3s;opacity:0;animation:fu 0.5s ease forwards;}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--p),var(--a));border-radius:20px 20px 0 0;transform:scaleX(0);transform-origin:left;transition:transform 0.4s;}
+.sc:focus-within{border-color:rgba(200,148,90,0.4);box-shadow:0 6px 28px rgba(200,148,90,0.12);}
+.sc:focus-within::after{transform:scaleX(1);}
+.sc:nth-child(1){animation-delay:.05s}.sc:nth-child(2){animation-delay:.10s}.sc:nth-child(3){animation-delay:.15s}.sc:nth-child(4){animation-delay:.20s}.sc:nth-child(5){animation-delay:.25s}.sc:nth-child(6){animation-delay:.30s}.sc:nth-child(7){animation-delay:.35s}.sc:nth-child(8){animation-delay:.40s}.sc:nth-child(9){animation-delay:.45s}.sc:nth-child(10){animation-delay:.50s}
+.sn{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--a));color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(200,148,90,0.3);transition:all 0.25s;}
+.sn.done{background:linear-gradient(135deg,#22c55e,#16a34a);animation:pi 0.35s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes pi{from{transform:scale(0.4) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes fu{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.lb{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--tx);line-height:1.25;}
+.ht{font-size:11.5px;color:var(--mu);margin-top:2px;}
+.fi{width:100%;background:#faf6f1;border:1.5px solid var(--br);border-radius:12px;padding:13px 15px;font-family:'Outfit',sans-serif;font-size:15px;color:var(--tx);outline:none;transition:all 0.2s;-webkit-appearance:none;appearance:none;}
+.fi::placeholder{color:var(--mu);opacity:0.65;}
+.fi:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 3px rgba(200,148,90,0.14);}
+.fi.err{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.1);}
+select.fi{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a7060' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;}
+.fe{font-size:11.5px;color:#ef4444;margin-top:7px;display:none;font-weight:500;}
+textarea.fi{resize:vertical;min-height:90px;line-height:1.6;}
+.pw2{position:relative;}.pfl{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none;}.pli{padding-left:42px!important;}
+.cg{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:8px 15px;border-radius:100px;border:1.5px solid var(--br);background:#faf6f1;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;transition:all 0.2s;user-select:none;white-space:nowrap;}
+.chip:hover{border-color:var(--p);color:var(--p);transform:translateY(-1px);}
+.chip.selected{border-color:var(--p);background:linear-gradient(135deg,var(--p),var(--a));color:#fff;box-shadow:0 3px 12px rgba(200,148,90,0.3);transform:translateY(-1px);}
+.og{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;}
+.ot{padding:11px 10px;border-radius:12px;border:1.5px solid var(--br);background:#faf6f1;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;transition:all 0.2s;text-align:center;user-select:none;display:flex;align-items:center;justify-content:center;gap:5px;line-height:1.3;}
+.ot:hover{border-color:var(--p);color:var(--p);transform:translateY(-2px);box-shadow:0 4px 12px rgba(200,148,90,0.1);}
+.ot.selected{border-color:var(--p);background:linear-gradient(135deg,var(--p),var(--a));color:#fff;box-shadow:0 4px 16px rgba(200,148,90,0.3);transform:translateY(-2px);}
+.ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;}
+.ac{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--br);background:#faf6f1;font-size:12.5px;font-weight:500;color:var(--mu);cursor:pointer;transition:all 0.2s;user-select:none;}
+.ac:hover{border-color:var(--p);color:var(--p);background:rgba(200,148,90,0.05);}
+.ac.sel{border-color:var(--p);background:rgba(200,148,90,0.08);color:var(--tx);}
+.ach{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--br);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;font-size:10px;font-weight:700;color:transparent;}
+.ac.sel .ach{background:linear-gradient(135deg,var(--p),var(--a));border-color:var(--p);color:#fff;}
+.sw{margin-top:10px;display:none;animation:fu 0.3s ease both;}
+.sw.show{display:block;}
+.swl{font-size:10.5px;font-weight:600;color:var(--mu);margin-bottom:6px;letter-spacing:0.05em;text-transform:uppercase;}
+.bs{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,${cfg.dk},#3d2a14);color:${cfg.ac};font-family:'Fraunces',serif;font-size:17px;font-weight:600;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 5px 24px rgba(26,18,8,0.22);}
+.bs:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(26,18,8,0.3);}
+.bs:active{transform:translateY(0);}
+.bs:disabled{opacity:0.55;cursor:not-allowed;transform:none;}
+.sa{opacity:0;animation:fu 0.5s ease 0.55s forwards;}
+#ss{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;align-items:center;justify-content:center;padding:24px;flex-direction:column;}
+#ss.show{display:flex;animation:fad 0.4s ease both;}
+@keyframes fad{from{opacity:0;}to{opacity:1;}}
+.scard{background:#fff;border-radius:28px;padding:44px 32px 36px;max-width:420px;width:100%;text-align:center;box-shadow:0 16px 64px rgba(45,31,14,0.12);border:1px solid var(--br);animation:slu 0.55s cubic-bezier(.34,1.56,.64,1) 0.1s both;}
+@keyframes slu{from{transform:translateY(32px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.cck{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;box-shadow:0 8px 32px rgba(34,197,94,0.32);animation:pi 0.5s cubic-bezier(.34,1.56,.64,1) 0.15s both;}
+.ccp{stroke-dasharray:52;stroke-dashoffset:52;animation:dk2 0.45s ease 0.5s forwards;}
+@keyframes dk2{to{stroke-dashoffset:0;}}
+.sbg{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--p),var(--a));color:#fff;padding:11px 26px;border-radius:100px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(200,148,90,0.4);animation:pi 0.5s cubic-bezier(.34,1.56,.64,1) 0.65s both;opacity:0;animation-fill-mode:both;}
+@keyframes sp2{to{transform:rotate(360deg);}}
+.spin{animation:sp2 0.75s linear infinite;}
+header{background:rgba(253,248,242,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--br);padding:13px 20px;position:sticky;top:0;z-index:50;}
+@media(max-width:480px){.sc{padding:18px 16px 22px;}.og{grid-template-columns:repeat(2,1fr);}.ag{grid-template-columns:repeat(2,1fr);}.scard{padding:32px 22px 28px;}}
+</style>
+</head>
+<body>
+
+<div id="ss">
+  <div class="scard">
+    <div class="cck"><svg width="34" height="34" viewBox="0 0 34 34" fill="none"><polyline class="ccp" points="7,18 14,25 27,10" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2 style="font-family:'Fraunces',serif;font-size:23px;font-weight:700;color:var(--tx);margin-bottom:10px;line-height:1.2;">You're all set! 🎉</h2>
+    <p style="font-size:14px;color:var(--mu);line-height:1.65;margin-bottom:24px;padding:0 8px;">${cfg.ty}</p>
+    <div class="sbg"><span>🏠 AI Match Score</span><span id="snum" style="font-family:'Fraunces',serif;font-size:24px;font-weight:700;">--</span><span style="font-size:12px;opacity:0.8;">/ 100</span></div>
+    <p style="font-size:11px;color:var(--mu);margin-top:14px;line-height:1.6;">A property advisor will contact you shortly.</p>
+    <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--br);"><p style="font-size:12px;color:var(--mu);font-weight:500;">${cfg.name} · ${cfg.phone}</p></div>
+  </div>
+</div>
+
+<div style="position:relative;z-index:1;min-height:100vh;padding-bottom:64px;">
+<header>
+  <div style="max-width:560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--p),var(--a));display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;box-shadow:0 3px 10px rgba(200,148,90,0.3);">${logoH}</div>
+      <div style="min-width:0;">
+        <div style="font-family:'Fraunces',serif;font-size:14px;font-weight:700;color:var(--tx);line-height:1.2;">${cfg.name}</div>
+        <div style="font-size:10px;color:var(--mu);letter-spacing:0.05em;">${cfg.tag}</div>
+      </div>
+    </div>
+    <a href="tel:${cfg.phone.replace(/[^\d+]/g,'')}" style="font-size:12px;font-weight:600;color:var(--p);text-decoration:none;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;">📞 ${cfg.phone}</a>
+  </div>
+</header>
+
+<div style="max-width:560px;margin:0 auto;padding:18px 20px 0;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+    <span style="font-size:11px;font-weight:600;color:var(--mu);letter-spacing:0.09em;text-transform:uppercase;">Progress</span>
+    <span id="pct" style="font-size:11px;font-weight:700;color:var(--p);">0% complete</span>
+  </div>
+  <div class="pt"><div class="pf" id="pfill"></div></div>
+</div>
+
+<div style="max-width:560px;margin:0 auto;padding:28px 20px 6px;text-align:center;">
+  <h1 style="font-family:'Fraunces',serif;font-size:clamp(26px,5.5vw,36px);font-weight:700;line-height:1.15;color:var(--tx);margin-bottom:11px;">${titleH}</h1>
+  <p style="font-size:13px;color:var(--mu);line-height:1.55;">${cfg.sub}</p>
+</div>
+
+<div style="max-width:560px;margin:0 auto;padding:18px 20px;">
+<form id="frm" novalidate>
+<div style="display:flex;flex-direction:column;gap:13px;">
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n1">1</div><div><div class="lb">Your Full Name</div><div class="ht">So we know who to reach out to</div></div></div>
+  <input type="text" id="q1" class="fi" placeholder="e.g. Arjun Chakraborty" autocomplete="name" oninput="fi(1)">
+  <div class="fe" id="e1">Please enter your full name</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n2">2</div><div><div class="lb">Phone Number <span style="color:var(--p);">*</span></div><div class="ht">We'll call only when you're ready · No spam</div></div></div>
+  <div class="pw2"><span class="pfl">🇮🇳</span><input type="tel" id="q2" class="fi pli" placeholder="+91 98000 00000" autocomplete="tel" oninput="fi(2)"></div>
+  <div class="fe" id="e2">Please enter a valid 10-digit phone number</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n3">3</div><div><div class="lb">Type of Property</div><div class="ht">What kind of home are you looking for?</div></div></div>
+  <select id="q3" class="fi" onchange="fi(3)">
+    <option value="" disabled selected>Choose a property type…</option>
+    <option value="2BHK">🏢  2 BHK Flat</option>
+    <option value="3BHK">🏠  3 BHK Flat</option>
+    <option value="4BHK">🏡  4 BHK Flat</option>
+    <option value="Villa">🌿  Villa / Independent House</option>
+    <option value="Plot">📐  Plot / Land</option>
+    <option value="Any">✨  Any — open to options</option>
+  </select>
+  <div class="fe" id="e3">Please select a property type</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n4">4</div><div><div class="lb">Preferred Location in ${cfg.city}</div><div class="ht">Tap all areas you're open to</div></div></div>
+  <div class="cg" id="lchips">${chipsH}</div>
+  <div class="fe" id="e4">Please select at least one location</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n5">5</div><div><div class="lb">Your Budget Range</div><div class="ht">Be honest — it helps us match the right properties</div></div></div>
+  <div class="og">
+    <div class="ot" data-val="Below 50L" onclick="st('b',this,5)">💰 Below ₹50L</div>
+    <div class="ot" data-val="50L-80L" onclick="st('b',this,5)">💰 ₹50L–80L</div>
+    <div class="ot" data-val="80L-1.2Cr" onclick="st('b',this,5)">💎 ₹80L–1.2Cr</div>
+    <div class="ot" data-val="1.2Cr-2Cr" onclick="st('b',this,5)">💎 ₹1.2Cr–2Cr</div>
+    <div class="ot" data-val="Above 2Cr" onclick="st('b',this,5)">👑 Above ₹2Cr</div>
+    <div class="ot" data-val="Not decided" onclick="st('b',this,5)">🤔 Not decided</div>
+  </div>
+  <div class="fe" id="e5">Please select a budget range</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n6">6</div><div><div class="lb">When do you need to buy / move in?</div><div class="ht">Select your expected timeline</div></div></div>
+  <div class="og">
+    <div class="ot" data-val="Within 3 months" onclick="st('t',this,6)">🚀 Within 3 months</div>
+    <div class="ot" data-val="3-6 months" onclick="st('t',this,6)">📅 3–6 months</div>
+    <div class="ot" data-val="6-12 months" onclick="st('t',this,6)">🗓️ 6–12 months</div>
+    <div class="ot" data-val="1-2 years" onclick="st('t',this,6)">⏳ 1–2 years</div>
+    <div class="ot" data-val="Just browsing" onclick="st('t',this,6)">👀 Just browsing</div>
+    <div class="ot" data-val="__other__" onclick="st('t',this,6,true)">✏️ Others</div>
+  </div>
+  <div class="sw" id="tlsw">
+    <div class="swl">Please specify your timeline</div>
+    <input type="text" id="tloth" class="fi" placeholder="e.g. After lease ends August 2026, post wedding in Dec…" oninput="othTyped('t',this.value)">
+  </div>
+  <div class="fe" id="e6">Please select or specify a timeline</div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n7">7</div><div><div class="lb">Connectivity Preferences</div><div class="ht">Optional — what transport access matters to you?</div></div></div>
+  <div class="ag" id="grp-conn">
+    <div class="ac" data-val="Metro Access" onclick="tac(this)"><span class="ach">✓</span>🚇 Metro Access</div>
+    <div class="ac" data-val="Bus Routes" onclick="tac(this)"><span class="ach">✓</span>🚌 Bus Routes</div>
+    <div class="ac" data-val="Highway/Bypass" onclick="tac(this)"><span class="ach">✓</span>🛣️ Highway</div>
+    <div class="ac" data-val="Airport Nearby" onclick="tac(this)"><span class="ach">✓</span>✈️ Airport Nearby</div>
+    <div class="ac" data-val="Railway Station" onclick="tac(this)"><span class="ach">✓</span>🚆 Railway</div>
+    <div class="ac" data-val="IT Hub Nearby" onclick="tac(this)"><span class="ach">✓</span>💻 IT Hub Nearby</div>
+    <div class="ac" data-val="__other__" onclick="tacOth(this,'conn-sw')"><span class="ach">✓</span>✏️ Others</div>
+  </div>
+  <div class="sw" id="conn-sw">
+    <div class="swl">Specify other connectivity needs</div>
+    <input type="text" id="conn-oth" class="fi" placeholder="e.g. Near Howrah Bridge, tram access…">
+  </div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n8">8</div><div><div class="lb">Environment Preferences</div><div class="ht">Optional — what surroundings matter to you?</div></div></div>
+  <div class="ag" id="grp-env">
+    <div class="ac" data-val="Green & Parks" onclick="tac(this)"><span class="ach">✓</span>🌳 Green & Parks</div>
+    <div class="ac" data-val="Low Traffic" onclick="tac(this)"><span class="ach">✓</span>🤫 Low Traffic</div>
+    <div class="ac" data-val="Waterfront/Lake" onclick="tac(this)"><span class="ach">✓</span>💧 Waterfront</div>
+    <div class="ac" data-val="Gated Community" onclick="tac(this)"><span class="ach">✓</span>🔒 Gated Community</div>
+    <div class="ac" data-val="Vaastu Compliant" onclick="tac(this)"><span class="ach">✓</span>🧿 Vaastu</div>
+    <div class="ac" data-val="East Facing" onclick="tac(this)"><span class="ach">✓</span>🌅 East Facing</div>
+    <div class="ac" data-val="Ground Floor" onclick="tac(this)"><span class="ach">✓</span>🏢 Ground Floor</div>
+    <div class="ac" data-val="High Floor/View" onclick="tac(this)"><span class="ach">✓</span>🌆 High Floor</div>
+    <div class="ac" data-val="__other__" onclick="tacOth(this,'env-sw')"><span class="ach">✓</span>✏️ Others</div>
+  </div>
+  <div class="sw" id="env-sw">
+    <div class="swl">Specify other environment preferences</div>
+    <input type="text" id="env-oth" class="fi" placeholder="e.g. Near temple, away from market noise…">
+  </div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n9">9</div><div><div class="lb">Amenities Required</div><div class="ht">Optional — select everything that matters</div></div></div>
+  <div class="ag" id="grp-amen">
+    <div class="ac" data-val="Car Parking" onclick="tac(this)"><span class="ach">✓</span>🚗 Car Parking</div>
+    <div class="ac" data-val="Swimming Pool" onclick="tac(this)"><span class="ach">✓</span>🏊 Pool</div>
+    <div class="ac" data-val="Gym/Fitness" onclick="tac(this)"><span class="ach">✓</span>💪 Gym</div>
+    <div class="ac" data-val="Children Play Area" onclick="tac(this)"><span class="ach">✓</span>🛝 Play Area</div>
+    <div class="ac" data-val="24/7 Security" onclick="tac(this)"><span class="ach">✓</span>👮 24/7 Security</div>
+    <div class="ac" data-val="Power Backup" onclick="tac(this)"><span class="ach">✓</span>⚡ Power Backup</div>
+    <div class="ac" data-val="Lift/Elevator" onclick="tac(this)"><span class="ach">✓</span>🛗 Lift</div>
+    <div class="ac" data-val="Clubhouse" onclick="tac(this)"><span class="ach">✓</span>🏛️ Clubhouse</div>
+    <div class="ac" data-val="CCTV" onclick="tac(this)"><span class="ach">✓</span>📷 CCTV</div>
+    <div class="ac" data-val="School Nearby" onclick="tac(this)"><span class="ach">✓</span>🏫 School Nearby</div>
+    <div class="ac" data-val="Hospital Nearby" onclick="tac(this)"><span class="ach">✓</span>🏥 Hospital</div>
+    <div class="ac" data-val="Mall/Shopping" onclick="tac(this)"><span class="ach">✓</span>🛍️ Mall/Shopping</div>
+    <div class="ac" data-val="__other__" onclick="tacOth(this,'amen-sw')"><span class="ach">✓</span>✏️ Others</div>
+  </div>
+  <div class="sw" id="amen-sw">
+    <div class="swl">Specify other amenities</div>
+    <input type="text" id="amen-oth" class="fi" placeholder="e.g. Rooftop garden, EV charging, temple inside campus…">
+  </div>
+</div>
+
+<div class="sc">
+  <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;"><div class="sn" id="n10">10</div><div><div class="lb">Anything else to tell us? <span style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:400;color:var(--mu);margin-left:4px;">(Optional)</span></div><div class="ht">Any other requirement we should know about</div></div></div>
+  <textarea id="q10" class="fi" rows="3" placeholder="e.g. NRI returning in 8 months, need ready-to-move, budget can stretch for the right property…" oninput="fi(10)"></textarea>
+</div>
+
+</div>
+
+<div class="sa" style="margin-top:16px;">
+  <button type="submit" class="bs" id="subbtn">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <span id="sbttxt">${cfg.btn}</span>
+  </button>
+  <p style="text-align:center;font-size:11px;color:var(--mu);margin-top:10px;line-height:1.55;">🔒 Your information is private and never shared with third parties</p>
+</div>
+</form>
+</div>
+
+<footer style="text-align:center;padding:28px 20px 8px;">
+  <p style="font-size:11px;color:var(--mu);line-height:1.8;">© ${cfg.year} ${cfg.name} · ${cfg.city}<br><a href="mailto:${cfg.email}" style="color:var(--p);text-decoration:none;">${cfg.email}</a></p>
+</footer>
+</div>
+
+<script>
+let bv='',tv='';
+const R=6;
+function toggleChip(el){el.classList.toggle('selected');mk(4,document.querySelectorAll('#lchips .chip.selected').length>0);up();document.getElementById('e4').style.display='none';}
+function st(g,el,n,isOth){
+  el.closest('.sc').querySelectorAll('.ot').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  if(g==='b'){bv=el.dataset.val;document.getElementById('e5').style.display='none';mk(5,true);up();}
+  if(g==='t'){
+    const sw=document.getElementById('tlsw');
+    if(isOth){sw.classList.add('show');tv=document.getElementById('tloth').value.trim();setTimeout(()=>document.getElementById('tloth').focus(),80);}
+    else{sw.classList.remove('show');tv=el.dataset.val;document.getElementById('e6').style.display='none';mk(6,true);up();}
+  }
+}
+function othTyped(g,v){
+  if(g==='t'){tv=v.trim();mk(6,tv.length>0);if(tv.length>0)document.getElementById('e6').style.display='none';up();}
+}
+function tac(el){el.classList.toggle('sel');}
+function tacOth(el,swId){
+  el.classList.toggle('sel');
+  const sw=document.getElementById(swId);
+  if(el.classList.contains('sel')){sw.classList.add('show');sw.querySelector('input').focus();}
+  else sw.classList.remove('show');
+}
+function gg(grpId,othId){
+  const v=[...document.querySelectorAll('#'+grpId+' .ac.sel')].filter(c=>c.dataset.val!=='__other__').map(c=>c.dataset.val);
+  const o=document.getElementById(othId);
+  if(o&&o.value.trim())v.push(o.value.trim());
+  return v.join(', ');
+}
+function fi(n){const d=sd(n);mk(n,d);up();if(d){const e=document.getElementById('e'+n);if(e)e.style.display='none';}}
+function sd(n){switch(n){case 1:return document.getElementById('q1').value.trim().length>=2;case 2:return document.getElementById('q2').value.replace(/\\D/g,'').length>=10;case 3:return document.getElementById('q3').value!=='';case 4:return document.querySelectorAll('#lchips .chip.selected').length>0;case 5:return bv!=='';case 6:return tv!=='';default:return true;}}
+function mk(n,d){const el=document.getElementById('n'+n);if(!el)return;if(d){el.classList.add('done');el.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';}else{el.classList.remove('done');el.textContent=n;}}
+function up(){let d=0;for(let i=1;i<=R;i++){if(sd(i))d++;}const p=Math.round(d/R*100);document.getElementById('pfill').style.width=p+'%';document.getElementById('pct').textContent=p+'% complete';}
+function cs(){let s=40;const t={'Within 3 months':30,'3-6 months':22,'6-12 months':14,'1-2 years':6,'Just browsing':2};s+=(t[tv]||(tv?8:0));if(bv&&bv!=='Not decided')s+=14;const l=document.querySelectorAll('#lchips .chip.selected');if(l.length===1&&l[0].dataset.val!=='Anywhere')s+=9;else if(l.length)s+=4;if(document.getElementById('q3').value&&document.getElementById('q3').value!=='Any')s+=5;if(gg('grp-conn','conn-oth').length>0)s+=3;if(gg('grp-amen','amen-oth').length>0)s+=4;if(document.getElementById('q10').value.trim().length>12)s+=5;return Math.min(s,99);}
+document.getElementById('frm').addEventListener('submit',async(e)=>{
+  e.preventDefault();let ok=true,first=null;
+  [{id:'q1',err:'e1',t:v=>v.trim().length>=2},{id:'q2',err:'e2',t:v=>v.replace(/\\D/g,'').length>=10},{id:'q3',err:'e3',t:v=>v!==''}].forEach(c=>{
+    const el=document.getElementById(c.id),er=document.getElementById(c.err);
+    if(!c.t(el.value)){el.classList.add('err');er.style.display='block';if(!first)first=el;ok=false;}else el.classList.remove('err');
+  });
+  if(!document.querySelectorAll('#lchips .chip.selected').length){document.getElementById('e4').style.display='block';if(!first)first=document.getElementById('lchips');ok=false;}
+  if(!bv){document.getElementById('e5').style.display='block';ok=false;}
+  if(!tv){document.getElementById('e6').style.display='block';ok=false;}
+  if(!ok){if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  const btn=document.getElementById('subbtn');btn.disabled=true;
+  document.getElementById('sbttxt').textContent='Sending…';btn.querySelector('svg').classList.add('spin');
+  const p={name:document.getElementById('q1').value.trim(),phone:document.getElementById('q2').value.trim(),propertyType:document.getElementById('q3').value,locations:[...document.querySelectorAll('#lchips .chip.selected')].map(c=>c.dataset.val).join(', '),budget:bv,timeline:tv,connectivity:gg('grp-conn','conn-oth'),environment:gg('grp-env','env-oth'),amenities:gg('grp-amen','amen-oth'),notes:document.getElementById('q10').value.trim(),submittedAt:new Date().toISOString(),source:'Buyer Intake Form',city:'${cfg.city}'};
+  try{await fetch('${cfg.wh}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p),mode:'no-cors'});}catch(err){}
+  document.getElementById('snum').textContent=cs();
+  document.getElementById('ss').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+<\/script>
+</body>
+</html>`;
+}
+
+function rp() {
+  const cfg = getCfg();
+  const html = buildHTML(cfg);
+  const frame = document.getElementById('pf2');
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  frame.src = url;
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+}
+
+function dlForm() {
+  const cfg = getCfg();
+  const html = buildHTML(cfg);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'index.html'; a.click();
+  URL.revokeObjectURL(url);
+  const n = document.getElementById('dln');
+  n.style.display = 'block';
+  setTimeout(() => { n.style.display = 'none'; }, 6000);
+}
+
+renderChips();
+rp();
+</script>
+</body>
+</html>
