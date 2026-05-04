@@ -742,7 +742,7 @@ async function syncProspects(apiKey) {
   const id = document.getElementById('prospectSheetId').value.trim();
   const tab = encodeURIComponent(document.getElementById('prospectTabName').value.trim() || 'Sheet1');
   if (!id) return;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}?key=${apiKey}`;
+const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}!A1:Z1000?key=${apiKey}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message || 'Prospects fetch failed');
@@ -767,7 +767,7 @@ async function syncLeads(apiKey) {
   const id = document.getElementById('leadsSheetId').value.trim();
   const tab = encodeURIComponent(document.getElementById('leadsTabName').value.trim() || 'Qualified Leads');
   if (!id) return;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}?key=${apiKey}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${tab}!A1:Z1000?key=${apiKey}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message || 'Leads fetch failed');
