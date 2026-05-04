@@ -742,7 +742,7 @@ async function syncProspects(apiKey) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message || 'Prospects fetch failed');
   const rows = (data.values || []).slice(1).filter(r => r[0] && r[0].toString().trim() !== '');
-  prospects = rows.filter(r => r[P.name]).map(r => ({
+  prospects = rows.filter(r => r[0] && r[0].toString().trim() !== '').map(r => ({
     name:     r[P.name]    || '',
     location: r[P.location]|| '',
     website:  r[P.website] || '',
