@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ═══ PAGE TITLE ═══ -->
+<title>LeadForge AI — Free Lead Audit for Kolkata Real Estate Agencies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS  —  edit brand colour on this line
+═══════════════════════════════════════════ */
+:root{
+  --a:#059669;          /* ← accent: emerald green          */
+  --a-h:#047857;        /* ← accent hover                   */
+  --a-s:rgba(5,150,105,.10);
+  --a-b:rgba(5,150,105,.22);
+  --ink:#0a0a0a;
+  --ink2:#3a3a3a;
+  --muted:#888;
+  --line:#e8e8e8;
+  --line2:#ccc;
+  --bg:#ffffff;
+  --bg2:#f7f7f7;
+  --fd:'Playfair Display',serif;
+  --fb:'Figtree',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --r:10px;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:18px;font-weight:500;line-height:1.65;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* TOPBAR */
+.bar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+}
+/* ═══ Brand name — change "LeadForge" here ═══ */
+.logo{font-family:var(--fd);font-size:20px;font-weight:800;letter-spacing:-.02em;color:var(--ink);}
+.logo em{font-style:normal;color:var(--a);}
+.bar-right{display:flex;align-items:center;gap:7px;font-family:var(--fm);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;}
+.live{width:6px;height:6px;border-radius:50%;background:var(--a);animation:blink 2.2s ease infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* HERO */
+.hero{max-width:640px;margin:0 auto;padding:80px 24px 68px;text-align:center;}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--line);border-radius:100px;
+  padding:6px 18px;font-family:var(--fm);font-size:12px;font-weight:600;
+  color:var(--muted);letter-spacing:.06em;margin-bottom:30px;
+  animation:up .45s ease both;
+}
+.eyebrow b{color:var(--a);font-weight:500;font-style:normal;}
+
+h1{
+  font-family:var(--fd);font-size:clamp(36px,7.5vw,64px);
+  font-weight:800;line-height:1.05;letter-spacing:-.03em;
+  margin-bottom:20px;animation:up .45s .07s ease both;
+}
+h1 em{font-style:normal;color:var(--a);}
+
+.hsub{
+  font-size:18px;font-weight:500;color:var(--ink2);line-height:1.75;
+  max-width:460px;margin:0 auto 36px;
+  animation:up .45s .13s ease both;
+}
+
+/* Stat grid */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;margin:0 auto 36px;
+  animation:up .45s .18s ease both;
+}
+.stat{padding:16px 10px;text-align:center;border-right:1px solid var(--line);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:var(--fd);font-size:27px;font-weight:800;color:var(--a);line-height:1;}
+.stat-l{font-family:var(--fm);font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-top:5px;line-height:1.3;}
+
+/* CTA button */
+.cta-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--ink);color:#fff;
+  font-family:var(--fb);font-size:17px;font-weight:700;
+  padding:16px 32px;border-radius:var(--r);border:none;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.16);
+  animation:up .45s .23s ease both;letter-spacing:-.01em;
+}
+.cta-btn:hover{background:#111;transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.2);}
+.cta-btn svg{width:16px;height:16px;transition:transform .2s;flex-shrink:0;}
+.cta-btn:hover svg{transform:translateX(3px);}
+
+.trust-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:16px;flex-wrap:wrap;margin-top:20px;
+  animation:up .45s .28s ease both;
+}
+.ti{font-family:var(--fm);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;display:flex;align-items:center;gap:5px;}
+.ti::before{content:'✓';color:var(--a);font-weight:700;}
+
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+hr.div{border:none;border-top:1px solid var(--line);}
+
+/* SURVEY WRAP */
+.sw{max-width:548px;margin:0 auto;padding:48px 20px 96px;}
+
+/* Progress */
+.prog{margin-bottom:30px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-lbl{font-family:var(--fm);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.prog-cnt{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--ink2);}
+.prog-track{height:2px;background:var(--line);border-radius:1px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--a);border-radius:1px;transition:width .55s cubic-bezier(.4,0,.2,1);}
+.segs{display:flex;gap:3px;margin-top:9px;}
+.seg{flex:1;height:2px;border-radius:1px;background:var(--line);transition:background .4s;}
+.seg.done{background:var(--a);}
+.seg.now{background:var(--a);opacity:.38;}
+
+/* Card */
+.card{
+  background:#fff;border:1px solid var(--line);
+  border-radius:14px;padding:36px 30px;
+  box-shadow:0 2px 18px rgba(0,0,0,.055);
+  animation:up .25s cubic-bezier(.4,0,.2,1) both;
+}
+
+.step-eye{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--a);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:block;}
+.step-h{font-family:var(--fd);font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:5px;line-height:1.2;}
+.step-s{font-size:15px;font-weight:500;color:var(--muted);margin-bottom:22px;}
+
+/* Fields */
+.fg{display:flex;flex-direction:column;gap:16px;}
+.flbl{display:block;font-family:var(--fm);font-size:12px;font-weight:700;color:var(--ink2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.tinput{
+  width:100%;background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--r);padding:14px 16px;
+  font-family:var(--fb);font-size:17px;font-weight:500;color:var(--ink);
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.tinput:focus{border-color:var(--a);box-shadow:0 0 0 3px var(--a-s);}
+.tinput::placeholder{color:var(--line2);}
+
+/* Option grid */
+.og{display:grid;gap:8px;}
+.og.g2{grid-template-columns:1fr 1fr;}
+.og.g1{grid-template-columns:1fr;}
+
+.ob{
+  display:flex;align-items:center;gap:11px;
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--r);padding:13px 16px;
+  font-family:var(--fb);font-size:15px;font-weight:600;
+  color:var(--ink2);cursor:pointer;text-align:left;
+  width:100%;transition:border-color .15s,background .15s,color .15s;
+  line-height:1.35;
+}
+.ob:hover{border-color:var(--a);color:var(--ink);}
+.ob.sel{background:var(--a-s);border-color:var(--a);color:var(--a);font-weight:600;}
+.om{
+  width:17px;height:17px;min-width:17px;border-radius:50%;
+  border:1.5px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.om.sq{border-radius:4px;}
+.ob.sel .om{background:var(--a);border-color:var(--a);}
+.csv{display:none;width:9px;height:9px;}
+.ob.sel .csv{display:block;}
+
+/* Nav */
+.nav{display:flex;gap:10px;margin-top:26px;}
+.bnext{
+  flex:1;background:var(--ink);color:#fff;
+  font-family:var(--fb);font-size:17px;font-weight:700;
+  padding:15px;border-radius:var(--r);border:none;cursor:pointer;
+  transition:all .2s;letter-spacing:-.01em;
+  box-shadow:0 3px 14px rgba(0,0,0,.12);
+}
+.bnext:hover{background:#111;transform:translateY(-1px);}
+.bnext:disabled{background:var(--line);color:var(--line2);box-shadow:none;cursor:not-allowed;transform:none;}
+.bback{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--line);font-family:var(--fb);
+  font-size:15px;font-weight:600;padding:15px 20px;border-radius:var(--r);
+  cursor:pointer;transition:all .2s;
+}
+.bback:hover{border-color:var(--line2);color:var(--ink2);}
+
+/* Agreement */
+.agr-eye{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--a);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;display:block;}
+.agr-h{font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+.agr-p{font-family:var(--fm);font-size:13px;font-weight:500;color:var(--muted);line-height:1.8;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
+.agr-p strong{color:var(--ink2);}
+.clauses{display:flex;flex-direction:column;gap:9px;margin-bottom:22px;}
+.cl{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;border-left:3px solid var(--line2);transition:border-left-color .2s;}
+.cl:hover{border-left-color:var(--a);}
+.cl-n{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--a);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;}
+.cl-h{font-family:var(--fd);font-size:15px;font-weight:700;margin-bottom:3px;}
+.cl-b{font-size:14px;font-weight:500;color:var(--ink2);line-height:1.65;}
+.crow{
+  display:flex;gap:13px;align-items:flex-start;
+  background:#f0fdf8;border:1.5px solid var(--a-b);
+  border-radius:var(--r);padding:15px;cursor:pointer;
+  margin-bottom:18px;transition:all .2s;
+}
+.crow.chk{background:#dcfff2;border-color:var(--a);}
+.cbox{
+  width:20px;height:20px;min-width:20px;border-radius:5px;
+  border:1.5px solid var(--line2);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;margin-top:1px;
+}
+.crow.chk .cbox{background:var(--a);border-color:var(--a);}
+.ctxt{font-size:15px;font-weight:500;color:var(--ink2);line-height:1.6;}
+.bsub{
+  width:100%;background:var(--a);color:#fff;
+  font-family:var(--fb);font-size:17px;font-weight:700;
+  padding:17px;border-radius:var(--r);border:none;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 18px var(--a-b);letter-spacing:-.01em;
+}
+.bsub:hover{background:var(--a-h);transform:translateY(-1px);}
+.bsub:disabled{background:var(--line);color:var(--line2);box-shadow:none;cursor:not-allowed;transform:none;}
+
+/* Success */
+.scard{
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:44px 30px;box-shadow:0 4px 32px rgba(0,0,0,.07);
+  text-align:center;animation:up .4s ease both;
+}
+.sico{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--a-s);border:1.5px solid var(--a-b);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;font-size:26px;
+}
+.stit{font-family:var(--fd);font-size:30px;font-weight:800;letter-spacing:-.04em;margin-bottom:10px;}
+.ssub{font-size:17px;font-weight:500;color:var(--ink2);line-height:1.65;max-width:360px;margin:0 auto 24px;}
+.sbadge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#fffbeb;border:1.5px solid #fcd34d;
+  border-radius:100px;padding:8px 22px;
+  font-family:var(--fm);font-size:11px;color:#92400e;
+  letter-spacing:.05em;margin-bottom:28px;
+}
+.rlist{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:26px;text-align:left;}
+.ri{
+  display:flex;gap:13px;align-items:flex-start;
+  padding:14px 18px;border-bottom:1px solid var(--line);
+  font-size:15px;font-weight:500;color:var(--ink2);line-height:1.5;
+}
+.ri:last-child{border-bottom:none;}
+.ri-dot{width:7px;height:7px;min-width:7px;border-radius:50%;background:var(--a);margin-top:5px;}
+.dcap{font-family:var(--fm);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:20px;}
+
+/* WhatsApp block */
+.wa-block{border:1px solid var(--line);border-radius:12px;overflow:hidden;text-align:left;}
+.wa-top{padding:20px 22px;border-bottom:1px solid var(--line);}
+.wa-eye{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.wa-h{font-family:var(--fd);font-size:20px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em;}
+.wa-s{font-size:15px;font-weight:500;color:var(--muted);line-height:1.6;}
+.wa-foot{padding:18px 22px;background:var(--bg2);}
+.wabtn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:#25d366;color:#fff;
+  font-family:var(--fb);font-size:17px;font-weight:700;
+  padding:15px;border-radius:var(--r);border:none;cursor:pointer;
+  text-decoration:none;transition:all .2s;
+  box-shadow:0 4px 16px rgba(37,211,102,.28);letter-spacing:-.01em;
+}
+.wabtn:hover{background:#1ebe59;transform:translateY(-1px);}
+
+/* Modal */
+.modal-ov{
+  position:fixed;inset:0;background:rgba(0,0,0,.42);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  padding:24px;animation:fadein .18s ease;
+}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal-box{
+  background:#fff;border-radius:14px;padding:28px 24px;
+  width:100%;max-width:400px;
+  box-shadow:0 20px 56px rgba(0,0,0,.16);
+  animation:up .2s ease both;
+}
+.m-eye{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;display:block;}
+.m-h{font-family:var(--fd);font-size:20px;font-weight:800;margin-bottom:16px;letter-spacing:-.02em;}
+.m-inp{
+  width:100%;border:1px solid var(--line);border-radius:var(--r);
+  padding:13px 15px;font-family:var(--fb);font-size:16px;font-weight:500;color:var(--ink);
+  outline:none;background:var(--bg2);margin-bottom:16px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.m-inp:focus{border-color:var(--a);box-shadow:0 0 0 3px var(--a-s);}
+.m-inp::placeholder{color:var(--line2);}
+.m-acts{display:flex;gap:10px;}
+.m-ok{
+  flex:1;background:var(--ink);color:#fff;
+  font-family:var(--fb);font-size:15px;font-weight:700;
+  padding:12px;border-radius:var(--r);border:none;cursor:pointer;transition:background .2s;
+}
+.m-ok:hover{background:#111;}
+.m-cancel{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--line);font-family:var(--fb);
+  font-size:15px;font-weight:600;padding:12px 18px;border-radius:var(--r);cursor:pointer;transition:border-color .2s;
+}
+.m-cancel:hover{border-color:var(--line2);}
+
+/* Spinner */
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+footer{text-align:center;padding:24px;font-family:var(--fm);font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.05em;border-top:1px solid var(--line);}
+
+@media(max-width:480px){
+  .card,.scard{padding:22px 16px;}
+  h1{font-size:32px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .stat:nth-child(2){border-right:none;}
+  .stat:nth-child(3){border-top:1px solid var(--line);}
+  .stat:nth-child(4){border-top:1px solid var(--line);border-right:none;}
+  .og.g2{grid-template-columns:1fr 1fr;}
+  .og.g1{grid-template-columns:1fr;}
+  .wa-top,.wa-foot{padding:16px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<nav class="bar">
+  <!-- ═══ Brand name — change text here ═══ -->
+  <div class="logo">LeadForge <em>AI</em></div>
+  <div class="bar-right"><div class="live"></div>Free Audit &nbsp;·&nbsp; No Obligation</div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="heroSection">
+  <div class="eyebrow">For Kolkata real estate agencies &nbsp;·&nbsp; <b>Limited spots this month</b></div>
+
+  <!-- ═══ Headline — change copy here ═══ -->
+  <h1>Stop Losing<br><em>40–60%</em> of Your<br>Enquiries</h1>
+
+  <!-- ═══ Subheadline ═══ -->
+  <p class="hsub">By the time your team replies, the buyer has moved on. We fix that with instant AI lead scoring, automated WhatsApp follow-up, and a live dashboard — set up in one day.</p>
+
+  <!-- Stat strip — replaces the old black pain bar -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-n">&lt;30s</div>
+      <div class="stat-l">Lead scored &amp; routed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">60%</div>
+      <div class="stat-l">Enquiries recovered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">1 day</div>
+      <div class="stat-l">Full setup time</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">0</div>
+      <div class="stat-l">Manual effort after</div>
+    </div>
+  </div>
+
+  <button class="cta-btn" onclick="startSurvey()">
+    Start My Free Agency Audit
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+
+  <div class="trust-row">
+    <span class="ti">100% Free</span>
+    <span class="ti">No credit card</span>
+    <span class="ti">Trusted by Kolkata agencies</span>
+    <span class="ti">Done in 60 seconds</span>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- ══ SURVEY ══ -->
+<div class="sw" id="surveySection" style="display:none;">
+
+  <div class="prog">
+    <div class="prog-top">
+      <span class="prog-lbl">Audit Progress</span>
+      <span class="prog-cnt" id="pLabel">Step 1 of 8</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="pFill" style="width:11%"></div></div>
+    <div class="segs" id="segs"></div>
+  </div>
+
+  <div id="stepCon"></div>
+
+  <!-- ══ AGREEMENT ══ -->
+  <div id="agrCon" style="display:none;">
+    <div class="card">
+      <span class="agr-eye">Final Step</span>
+      <div class="agr-h">Service Agreement</div>
+      <!-- ═══ Add Debyatan's last name where indicated ═══ -->
+      <div class="agr-p">
+        Between: <strong>Areev Dey</strong> &amp; <strong>Debyatan [Last Name]</strong>
+        operating as <strong>LeadForge AI</strong> ("Service Provider")<br>
+        — and — You / Your Real Estate Agency ("Client")
+      </div>
+      <div class="clauses">
+        <div class="cl"><div class="cl-n">Clause 1</div><div class="cl-h">Free Audit Scope</div><div class="cl-b">We review up to 10 recent enquiries, score them using AI, demonstrate a live dashboard, and provide honest recommendations — completely free with zero obligation to proceed.</div></div>
+        <div class="cl"><div class="cl-n">Clause 2</div><div class="cl-h">Data Privacy</div><div class="cl-b">All sample data is used solely for this demonstration and permanently deleted within 30 days unless you become a paid client. We never share your information with any third party.</div></div>
+        <div class="cl"><div class="cl-n">Clause 3</div><div class="cl-h">No Guaranteed Outcomes</div><div class="cl-b">This is a capability demonstration. Actual results depend on your lead volume and team. We do not guarantee any specific number of conversions or revenue.</div></div>
+        <div class="cl"><div class="cl-n">Clause 4</div><div class="cl-h">If You Decide to Proceed</div><div class="cl-b">One-time setup: ₹8,000 – ₹25,000. Monthly retainer: ₹3,000 – ₹10,000. Cancel anytime with 7 days' notice. All workflows and dashboards built are 100% yours upon full payment.</div></div>
+        <div class="cl"><div class="cl-n">Clause 5</div><div class="cl-h">Liability &amp; Jurisdiction</div><div class="cl-b">Governed by Indian law. Our total liability is limited to fees actually paid by you for the relevant service period.</div></div>
+      </div>
+      <div class="crow" id="cRow" onclick="toggleConsent()">
+        <div class="cbox" id="cBox">
+          <svg id="cChk" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2.5" style="width:10px;height:10px;display:none"><polyline points="1.5,5 3.5,7.5 8.5,2.5"/></svg>
+        </div>
+        <div class="ctxt">I have read and agree to the above terms. I understand this begins as a no-obligation free audit.</div>
+      </div>
+      <button class="bsub" id="subBtn" disabled onclick="submitForm()">Confirm &amp; Get My Free Audit Plan</button>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS ══ -->
+  <div id="sucCon" style="display:none;">
+    <div class="scard">
+      <div class="sico">🎯</div>
+      <div class="stit" id="sucTitle">Your audit is ready!</div>
+      <p class="ssub">Your agency has been scored. We'll reach out within 24 hours with a personalised action plan built specifically for you.</p>
+      <div class="sbadge">★ HIGH POTENTIAL AGENCY</div>
+      <div class="rlist">
+        <div class="ri"><div class="ri-dot"></div><span>AI-scored leads within 30 seconds of every new enquiry</span></div>
+        <div class="ri"><div class="ri-dot"></div><span>Automated WhatsApp follow-up — no manual typing required</span></div>
+        <div class="ri"><div class="ri-dot"></div><span>Live dashboard with daily performance reports, zero effort</span></div>
+        <div class="ri"><div class="ri-dot"></div><span>Recover 40–60% of enquiries currently lost to slow response</span></div>
+      </div>
+      <p class="dcap">What your team sees every morning — zero effort, full clarity</p>
+      <div class="wa-block">
+        <div class="wa-top">
+          <div class="wa-eye">Next Step</div>
+          <div class="wa-h">Connect with Areev directly</div>
+          <p class="wa-s">Schedule your personalised walkthrough. Average response under 30 minutes during business hours.</p>
+        </div>
+        <div class="wa-foot">
+          <!-- ═══ WA_NUM is set in JS config below ═══ -->
+          <a class="wabtn" id="waLink" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Begin My Personalised Walkthrough
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>LeadForge AI &copy; 2026 &nbsp;·&nbsp; 100% Safe &nbsp;·&nbsp; Data used only for your audit &nbsp;·&nbsp; Powered by n8n + Claude AI</footer>
+
+<!-- ══ OTHER MODAL ══ -->
+<div class="modal-ov" id="modal" style="display:none;" onclick="modalBg(event)">
+  <div class="modal-box">
+    <span class="m-eye">Please specify</span>
+    <div class="m-h">What did you have in mind?</div>
+    <input class="m-inp" id="mInp" type="text" placeholder="Type your answer here…" maxlength="120">
+    <div class="m-acts">
+      <button class="m-cancel" onclick="closeModal()">Cancel</button>
+      <button class="m-ok" onclick="confirmModal()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   CONFIG — fill these before deploying
+════════════════════════════════════════ */
+const WEBHOOK = 'https://lebu69.app.n8n.cloud/webhook/landing-page-submission'; // ← n8n webhook URL
+const WA_NUM  = '919804455155'; // ← WhatsApp number, no + or spaces e.g. 919876543210
+/* ═══════════════════════════════════════ */
+
+let step = 0, ans = {}, consent = false;
+let mField = null, mMany = false, mBtn = null;
+
+const CHK = `<svg class="csv" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="1.5,5 3.5,7.5 8.5,2.5"/></svg>`;
+
+/* ── Step feedback ── */
+const FB = [
+  "Let's start — tell us about your agency.",
+  "Good — this helps us understand your scale.",
+  "Now, where do most of your leads come from?",
+  "This tells us a lot about your daily workflow.",
+  "Great — now let's look at your team.",
+  "Helpful context on your marketing investment.",
+  "Almost there — what's causing the most friction?",
+  "Last step — we'll plan around your schedule."
+];
+
+/* ── Step definitions ── */
+const STEPS = [
+  {
+    title:"Tell us about your agency",
+    fields:[
+      {name:"agencyName",type:"txt",label:"Agency Name",ph:"e.g. Sunrise Realty Pvt. Ltd."},
+      {name:"role",type:"one",label:"Your Role",
+       opts:["Owner / Director","Managing Partner","Senior Broker","Operations Manager","Other"]}
+    ]
+  },
+  {
+    title:"How many enquiries does your agency receive per week?",
+    sub:"Include WhatsApp, calls, portals, and walk-ins combined",
+    fields:[
+      {name:"enquiriesPerWeek",type:"one",
+       opts:["Fewer than 10","10 – 30","30 – 60","60 or more"]}
+    ]
+  },
+  {
+    title:"Where do most of your leads come from?",
+    sub:"Select all that apply",
+    fields:[
+      {name:"leadSources",type:"many",
+       opts:["WhatsApp","99acres","Magicbricks","Housing.com","Justdial","Facebook / Instagram Ads","Website / Contact Form","Walk-ins","Referrals","Other"]}
+    ]
+  },
+  {
+    title:"How much time is spent on manual follow-up each day?",
+    sub:"Calls, WhatsApp messages, and status updates combined",
+    fields:[
+      {name:"followUpTime",type:"one",
+       opts:["Less than 1 hour","1 – 2 hours","2 – 4 hours","More than 4 hours"]}
+    ]
+  },
+  {
+    title:"How large is your team?",
+    sub:"People actively handling enquiries and follow-up",
+    fields:[
+      {name:"teamSize",type:"one",
+       opts:["Just me (solo)","2 – 5 people","6 – 15 people","More than 15 people"]}
+    ]
+  },
+  {
+    title:"What is your monthly spend on property portals?",
+    sub:"99acres, Magicbricks, Housing.com etc. combined",
+    fields:[
+      {name:"portalBudget",type:"one",
+       opts:["We don't pay for portals","Under ₹5,000","₹5,000 – ₹15,000","₹15,000 – ₹40,000","Above ₹40,000"]}
+    ]
+  },
+  {
+    title:"What are your biggest pain points right now?",
+    sub:"Select all that apply",
+    fields:[
+      {name:"painPoints",type:"many",
+       opts:["Slow or missed WhatsApp replies","No way to score or prioritise leads","Losing buyers due to delayed response","No centralised dashboard or reporting","Too much time on cold or unqualified leads","Team not following up consistently","No visibility into enquiry status","Other"]}
+    ]
+  },
+  {
+    title:"When is the best time for us to reach you?",
+    sub:"We'll schedule your walkthrough around this",
+    fields:[
+      {name:"contactTime",type:"one",
+       opts:["Morning (9 AM – 12 PM)","Afternoon (12 PM – 4 PM)","Evening (4 PM – 8 PM)","Anytime works"]},
+      {name:"valuableFeatures",type:"many",label:"What would be most valuable to your agency?",
+       opts:["Instant AI lead scoring","Auto WhatsApp reply templates","Live enquiry dashboard","Daily performance reports","Automated follow-up sequences","Lead qualification before broker contact","CRM integration","Other"]}
+    ]
+  }
+];
+
+/* ── Segment bar ── */
+function buildSegs(cur) {
+  let h = '';
+  for (let i = 0; i < STEPS.length; i++) {
+    const c = i < cur ? 'done' : i === cur ? 'now' : '';
+    h += `<div class="seg ${c}"></div>`;
+  }
+  document.getElementById('segs').innerHTML = h;
+}
+
+/* ── Start survey ── */
+function startSurvey() {
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('surveySection').style.display = 'block';
+  render(0);
+  scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── Render step ── */
+function render(i) {
+  step = i;
+  const s = STEPS[i], tot = STEPS.length;
+  const pct = Math.round(((i+1)/(tot+1))*100);
+  document.getElementById('pLabel').textContent = `Step ${i+1} of ${tot}`;
+  document.getElementById('pFill').style.width = pct+'%';
+  document.getElementById('stepCon').style.display = 'block';
+  document.getElementById('agrCon').style.display = 'none';
+  buildSegs(i);
+
+  let fh = '';
+  for (const f of s.fields) {
+    if (f.type === 'txt') {
+      fh += `<div>
+        <label class="flbl" for="f_${f.name}">${f.label}</label>
+        <input class="tinput" id="f_${f.name}" type="text"
+          placeholder="${f.ph||''}" value="${ans[f.name]||''}"
+          oninput="ans['${f.name}']=this.value;chkV()">
+      </div>`;
+    } else if (f.type === 'one') {
+      const gc = f.opts.length <= 4 ? 'og g2' : 'og g1';
+      fh += `<div>${f.label?`<label class="flbl">${f.label}</label>`:''}<div class="${gc}">`;
+      for (const o of f.opts) {
+        const isOth = o==='Other';
+        const dispVal = isOth && ans[f.name]==='Other' && ans[f.name+'_other'] ? `Other: ${ans[f.name+'_other']}` : o;
+        const sel = ans[f.name]===o || (isOth && ans[f.name]==='Other');
+        const safe = o.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+        fh += `<button class="ob${sel?' sel':''}" onclick="pickOne('${f.name}','${safe}',this,${isOth})">
+          <span class="om">${CHK}</span>${dispVal}
+        </button>`;
+      }
+      fh += '</div></div>';
+    } else if (f.type === 'many') {
+      const vals = Array.isArray(ans[f.name]) ? ans[f.name] : [];
+      fh += `<div>${f.label?`<label class="flbl">${f.label}</label>`:''}<div class="og g1">`;
+      for (const o of f.opts) {
+        const isOth = o==='Other';
+        const sel = vals.includes(o);
+        const dispVal = isOth && sel && ans[f.name+'_other'] ? `Other: ${ans[f.name+'_other']}` : o;
+        const safe = o.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+        fh += `<button class="ob${sel?' sel':''}" onclick="pickMany('${f.name}','${safe}',this,${isOth})">
+          <span class="om sq">${CHK}</span>${dispVal}
+        </button>`;
+      }
+      fh += '</div></div>';
+    }
+  }
+
+  const isLast = i===tot-1;
+  document.getElementById('stepCon').innerHTML = `
+    <div class="card">
+      <span class="step-eye">${FB[i]}</span>
+      <div class="step-h">${s.title}</div>
+      ${s.sub?`<div class="step-s">${s.sub}</div>`:''}
+      <div class="fg">${fh}</div>
+      <div class="nav">
+        ${i>0?'<button class="bback" onclick="goBack()">← Back</button>':''}
+        <button class="bnext" id="nBtn" onclick="goNext()" ${isValid(i)?'':'disabled'}>
+          ${isLast?'Review Agreement →':'Continue →'}
+        </button>
+      </div>
+    </div>`;
+}
+
+/* ── Pick one ── */
+function pickOne(name, val, btn, isOth) {
+  if (isOth) { openModal(name, false, btn); return; }
+  ans[name] = val;
+  delete ans[name+'_other'];
+  btn.closest('.og').querySelectorAll('.ob').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  chkV();
+}
+
+/* ── Pick many ── */
+function pickMany(name, val, btn, isOth) {
+  if (isOth) {
+    if (!Array.isArray(ans[name])) ans[name]=[];
+    if (ans[name].includes('Other')) {
+      ans[name].splice(ans[name].indexOf('Other'),1);
+      delete ans[name+'_other'];
+      btn.classList.remove('sel');
+      btn.innerHTML = `<span class="om sq">${CHK}</span>Other`;
+      chkV();
+    } else { openModal(name, true, btn); }
+    return;
+  }
+  if (!Array.isArray(ans[name])) ans[name]=[];
+  const idx = ans[name].indexOf(val);
+  if (idx===-1){ans[name].push(val);btn.classList.add('sel');}
+  else{ans[name].splice(idx,1);btn.classList.remove('sel');}
+  chkV();
+}
+
+/* ── Modal ── */
+function openModal(field, isMany, trigBtn) {
+  mField=field; mMany=isMany; mBtn=trigBtn;
+  document.getElementById('mInp').value = ans[field+'_other']||'';
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('mInp').focus(),80);
+}
+function closeModal(){
+  document.getElementById('modal').style.display='none';
+  mField=null; mBtn=null;
+}
+function confirmModal(){
+  const v=document.getElementById('mInp').value.trim();
+  if(!v||!mField){closeModal();return;}
+  ans[mField+'_other']=v;
+  if(mMany){
+    if(!Array.isArray(ans[mField]))ans[mField]=[];
+    if(!ans[mField].includes('Other'))ans[mField].push('Other');
+    if(mBtn){mBtn.classList.add('sel');mBtn.innerHTML=`<span class="om sq">${CHK}</span>Other: ${v}`;}
+  } else {
+    ans[mField]='Other';
+    if(mBtn){
+      mBtn.closest('.og').querySelectorAll('.ob').forEach(b=>b.classList.remove('sel'));
+      mBtn.classList.add('sel');
+      mBtn.innerHTML=`<span class="om">${CHK}</span>Other: ${v}`;
+    }
+  }
+  closeModal();
+  chkV();
+}
+function modalBg(e){if(e.target===document.getElementById('modal'))closeModal();}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'&&document.getElementById('modal').style.display!=='none')confirmModal();
+});
+
+/* ── Validation ── */
+function isValid(i){
+  for(const f of STEPS[i].fields){
+    const v=ans[f.name];
+    if(!v||(Array.isArray(v)&&!v.length)||(typeof v==='string'&&!v.trim()))return false;
+  }
+  return true;
+}
+function chkV(){const b=document.getElementById('nBtn');if(b)b.disabled=!isValid(step);}
+
+/* ── Navigation ── */
+function goNext(){
+  if(!isValid(step))return;
+  if(step<STEPS.length-1)render(step+1);
+  else showAgr();
+  scrollTo({top:0,behavior:'smooth'});
+}
+function goBack(){if(step>0){render(step-1);scrollTo({top:0,behavior:'smooth'});}}
+
+/* ── Agreement ── */
+function showAgr(){
+  document.getElementById('pLabel').textContent='Agreement';
+  document.getElementById('pFill').style.width='95%';
+  document.getElementById('stepCon').style.display='none';
+  document.getElementById('agrCon').style.display='block';
+  buildSegs(STEPS.length);
+}
+function toggleConsent(){
+  consent=!consent;
+  document.getElementById('cRow').classList.toggle('chk',consent);
+  document.getElementById('cChk').style.display=consent?'block':'none';
+  document.getElementById('subBtn').disabled=!consent;
+}
+
+/* ── Submit ── */
+async function submitForm(){
+  if(!consent)return;
+  const btn=document.getElementById('subBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span>Building your plan…';
+  const p=new URLSearchParams(location.search);
+  const arr=a=>Array.isArray(a)?a.join(', '):(a||'');
+  const oth=k=>ans[k+'_other']?` (${ans[k+'_other']})` :'';
+  const payload={
+    token:p.get('token')||'',email:p.get('email')||'',
+    name:p.get('name')||ans.agencyName||'',
+    agencyName:ans.agencyName||'',
+    role:ans.role+oth('role'),
+    enquiriesPerWeek:ans.enquiriesPerWeek||'',
+    leadSources:arr(ans.leadSources)+oth('leadSources'),
+    followUpTime:ans.followUpTime||'',
+    teamSize:ans.teamSize||'',
+    portalBudget:ans.portalBudget||'',
+    painPoints:arr(ans.painPoints)+oth('painPoints'),
+    contactTime:ans.contactTime||'',
+    valuableFeatures:arr(ans.valuableFeatures)+oth('valuableFeatures'),
+    agreedToTerms:'Yes',agreed:true,
+    timestamp:new Date().toISOString()
+  };
+  try{
+    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+  }catch(e){console.warn('Webhook:',e.message);}
+  showSuccess(ans.agencyName||'your agency');
+}
+
+/* ── Success ── */
+function showSuccess(name){
+  document.getElementById('pFill').style.width='100%';
+  document.getElementById('pLabel').textContent='Done ✓';
+  document.getElementById('agrCon').style.display='none';
+  document.getElementById('sucCon').style.display='block';
+  document.getElementById('sucTitle').textContent='Thank you, '+name+'!';
+  // ═══ Customise WhatsApp opening message here ═══
+  const msg=encodeURIComponent(`Hi Areev, I just completed the LeadForge AI free audit for ${name}. Looking forward to the personalised walkthrough!`);
+  document.getElementById('waLink').href=`https://wa.me/${WA_NUM}?text=${msg}`;
+  scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
