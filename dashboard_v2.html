@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Intelligence Dashboard — Kolkata RE</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b12;
+  --bg2: #0d1120;
+  --bg3: #121826;
+  --bg4: #181f2e;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --txt: #e2e8f4;
+  --txt2: #8893a8;
+  --txt3: #4a5568;
+  --accent: #3b82f6;
+  --accent-dim: rgba(59,130,246,0.12);
+  --accent-glow: rgba(59,130,246,0.25);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.1);
+  --hot: #f43f5e; --hot-dim: rgba(244,63,94,0.1); --hot-bd: rgba(244,63,94,0.25);
+  --warm: #f97316; --warm-dim: rgba(249,115,22,0.1); --warm-bd: rgba(249,115,22,0.25);
+  --tepid: #eab308; --tepid-dim: rgba(234,179,8,0.1); --tepid-bd: rgba(234,179,8,0.25);
+  --cold: #3b82f6; --cold-dim: rgba(59,130,246,0.1); --cold-bd: rgba(59,130,246,0.25);
+  --unq: #8b5cf6; --unq-dim: rgba(139,92,246,0.1); --unq-bd: rgba(139,92,246,0.25);
+  --flag: #ec4899; --flag-dim: rgba(236,72,153,0.1); --flag-bd: rgba(236,72,153,0.25);
+  --await: #06b6d4; --await-dim: rgba(6,182,212,0.1); --await-bd: rgba(6,182,212,0.25);
+  --r: 10px;
+  --sw: 260px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;overflow-x:hidden}
+
+/* noise */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+
+/* ─── SIDEBAR ─── */
+.sidebar{width:var(--sw);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);padding:24px 18px;display:flex;flex-direction:column;gap:22px;position:fixed;top:0;left:0;z-index:100;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 4px 14px rgba(59,130,246,.3)}
+.logo-name{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;line-height:1.35;letter-spacing:.01em}
+.logo-name small{display:block;font-size:9.5px;font-weight:500;color:var(--txt2);letter-spacing:.09em;text-transform:uppercase;margin-top:1px}
+
+/* Sheet Config box */
+.sheet-config{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px}
+.sc-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sc-title svg{color:var(--accent)}
+.sc-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11.5px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;transition:border .2s;margin-bottom:7px}
+.sc-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+.sc-input::placeholder{color:var(--txt3)}
+.btn-connect{width:100%;padding:9px;background:linear-gradient(135deg,var(--accent),#6366f1);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-connect:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,.35)}
+.connected-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:var(--green-dim);border:1px solid rgba(16,185,129,.2);border-radius:5px;padding:5px 9px;margin-top:7px}
+.connected-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+
+/* Branding config */
+.brand-config{display:flex;flex-direction:column;gap:7px}
+.brand-preview{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.brand-emoji{font-size:18px}
+.brand-name-display{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--txt)}
+
+/* Divider */
+.divider{height:1px;background:var(--border)}
+
+/* Section label */
+.slabel{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px}
+
+/* Filter chips sidebar */
+.chip-row{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 10px;border-radius:100px;font-size:10.5px;font-weight:600;cursor:pointer;border:1px solid;transition:all .18s;letter-spacing:.02em;user-select:none}
+.chip-all{border-color:var(--border2);color:var(--txt2)}
+.chip-all.on,.chip-all:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.chip-hot{border-color:var(--hot-bd);color:var(--hot)}
+.chip-hot.on,.chip-hot:hover{background:var(--hot-dim)}
+.chip-warm{border-color:var(--warm-bd);color:var(--warm)}
+.chip-warm.on,.chip-warm:hover{background:var(--warm-dim)}
+.chip-tepid{border-color:var(--tepid-bd);color:var(--tepid)}
+.chip-tepid.on,.chip-tepid:hover{background:var(--tepid-dim)}
+.chip-cold{border-color:var(--cold-bd);color:var(--cold)}
+.chip-cold.on,.chip-cold:hover{background:var(--cold-dim)}
+.chip-unq{border-color:var(--unq-bd);color:var(--unq)}
+.chip-unq.on,.chip-unq:hover{background:var(--unq-dim)}
+.chip-flag{border-color:var(--flag-bd);color:var(--flag)}
+.chip-flag.on,.chip-flag:hover{background:var(--flag-dim)}
+.chip-await{border-color:var(--await-bd);color:var(--await)}
+.chip-await.on,.chip-await:hover{background:var(--await-dim)}
+
+/* Status filter row */
+.status-chips{display:flex;flex-direction:column;gap:5px}
+
+/* Refresh */
+.btn-refresh{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-refresh:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.spin{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Live dot */
+.live-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);margin-top:auto;padding-top:10px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
+
+/* Mobile toggle */
+.mb-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px;cursor:pointer;color:var(--txt)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99}
+.overlay.on{display:block}
+
+/* ─── MAIN ─── */
+.main{margin-left:var(--sw);flex:1;padding:28px 30px;position:relative;z-index:1;min-width:0}
+
+/* Header */
+.hd{margin-bottom:24px;animation:up .5s ease both}
+.hd-eye{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.hd-eye::before{content:'';width:20px;height:2px;background:var(--accent);border-radius:1px;display:inline-block}
+.hd-title{font-family:'Syne',sans-serif;font-size:clamp(20px,2.6vw,28px);font-weight:800;letter-spacing:-.02em;line-height:1.1;background:linear-gradient(135deg,#e2e8f4 30%,#6b7897);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hd-sub{font-size:12.5px;color:var(--txt2);margin-top:5px}
+.hd-sub b{color:var(--accent);font-weight:600}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:22px;width:fit-content;animation:up .5s .05s ease both}
+.tab{padding:8px 20px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--txt2);transition:all .2s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab.on{background:var(--bg3);color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab .tbadge{font-size:10px;font-family:'DM Mono',monospace;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--txt3)}
+.tab.on .tbadge{color:var(--accent);border-color:var(--accent-dim);background:var(--accent-dim)}
+
+/* ── Summary cards ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px;margin-bottom:24px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 16px;position:relative;overflow:hidden;transition:all .22s;animation:up .5s ease both;cursor:default}
+.card:hover{border-color:var(--border2);transform:translateY(-2px);background:var(--bg3)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+.c-total::before{background:linear-gradient(90deg,var(--accent),#6366f1)}
+.c-hot::before{background:linear-gradient(90deg,var(--hot),#fb7185)}
+.c-warm::before{background:linear-gradient(90deg,var(--warm),#fbbf24)}
+.c-cold::before{background:linear-gradient(90deg,var(--cold),#06b6d4)}
+.c-await::before{background:linear-gradient(90deg,var(--await),#38bdf8)}
+.c-flag::before{background:linear-gradient(90deg,var(--flag),#a855f7)}
+.c-avg::before{background:linear-gradient(90deg,var(--green),#34d399)}
+.card-ico{font-size:18px;margin-bottom:10px}
+.card-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.c-total .card-val{color:var(--txt)}
+.c-hot .card-val{color:var(--hot)}
+.c-warm .card-val{color:var(--warm)}
+.c-cold .card-val{color:var(--cold)}
+.c-await .card-val{color:var(--await)}
+.c-flag .card-val{color:var(--flag)}
+.c-avg .card-val{color:var(--green)}
+.card-lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-top:4px}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;animation:up .55s ease both}
+.sec-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px}
+.row-count{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--txt2);background:var(--bg2);border:1px solid var(--border);padding:2px 8px;border-radius:4px}
+.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--txt3);pointer-events:none}
+.search-input{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 12px 8px 32px;color:var(--txt);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;width:190px;transition:all .2s}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim);width:220px}
+.search-input::placeholder{color:var(--txt3)}
+.btn-export{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-export:hover{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.view-toggle{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.vt-btn{padding:7px 12px;cursor:pointer;color:var(--txt3);transition:all .2s;font-size:12px;display:flex;align-items:center;gap:4px}
+.vt-btn.on{background:var(--bg3);color:var(--txt);border-right:1px solid var(--border)}
+.vt-btn:last-child{border-right:none}
+
+/* Date filter */
+.date-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap;animation:up .58s ease both}
+.date-chip{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--txt2);transition:all .18s;background:transparent}
+.date-chip.on,.date-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.date-inputs{display:flex;align-items:center;gap:5px}
+.date-input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--txt);font-family:'DM Mono',monospace;outline:none;transition:border .2s}
+.date-input:focus{border-color:var(--accent)}
+.date-sep{font-size:11px;color:var(--txt3)}
+
+/* Show-in-dash toggle */
+.dash-toggle{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;font-size:11.5px;color:var(--txt2);cursor:pointer;transition:all .2s;user-select:none}
+.dash-toggle.on{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.toggle-sw{width:26px;height:14px;background:var(--border2);border-radius:7px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-sw::after{content:'';position:absolute;width:10px;height:10px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.dash-toggle.on .toggle-sw{background:var(--green)}
+.dash-toggle.on .toggle-sw::after{transform:translateX(12px)}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .6s ease both;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
+thead{background:var(--bg);border-bottom:1px solid var(--border)}
+th{padding:11px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+th:hover{color:var(--txt2)}
+th.sorted{color:var(--accent)}
+.si{display:inline-block;margin-left:3px;opacity:.4;font-size:9px}
+th.sorted .si{opacity:1}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;animation:rowIn .35s ease both}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+td{padding:13px 14px;color:var(--txt2);vertical-align:middle;max-width:180px}
+.td-name{color:var(--txt);font-weight:600;font-size:13px}
+.td-phone{font-family:'DM Mono',monospace;font-size:11.5px}
+.td-budget{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--green);font-weight:500}
+
+/* Score */
+.score-cell{display:flex;align-items:center;gap:7px}
+.score-bar-wrap{flex:1;height:3px;background:var(--border);border-radius:2px;min-width:40px}
+.score-bar{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.score-num{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;min-width:24px;text-align:right}
+.sh .score-bar{background:var(--hot)} .sh .score-num{color:var(--hot)}
+.sw .score-bar{background:var(--warm)} .sw .score-num{color:var(--warm)}
+.st .score-bar{background:var(--tepid)} .st .score-num{color:var(--tepid)}
+.sc .score-bar{background:var(--cold)} .sc .score-num{color:var(--cold)}
+.su .score-bar{background:var(--unq)} .su .score-num{color:var(--unq)}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;border:1px solid}
+.bd{width:5px;height:5px;border-radius:50%}
+.b-hot{color:var(--hot);background:var(--hot-dim);border-color:var(--hot-bd)} .b-hot .bd{background:var(--hot)}
+.b-warm{color:var(--warm);background:var(--warm-dim);border-color:var(--warm-bd)} .b-warm .bd{background:var(--warm)}
+.b-tepid{color:var(--tepid);background:var(--tepid-dim);border-color:var(--tepid-bd)} .b-tepid .bd{background:var(--tepid)}
+.b-cold{color:var(--cold);background:var(--cold-dim);border-color:var(--cold-bd)} .b-cold .bd{background:var(--cold)}
+.b-unq{color:var(--unq);background:var(--unq-dim);border-color:var(--unq-bd)} .b-unq .bd{background:var(--unq)}
+.b-flag{color:var(--flag);background:var(--flag-dim);border-color:var(--flag-bd)} .b-flag .bd{background:var(--flag)}
+.b-await{color:var(--await);background:var(--await-dim);border-color:var(--await-bd)} .b-await .bd{background:var(--await)}
+.b-scored{color:var(--green);background:var(--green-dim);border-color:rgba(16,185,129,.25)} .b-scored .bd{background:var(--green)}
+
+/* Status pipeline badges */
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap;border:1px solid}
+
+/* Source */
+.src{font-size:10.5px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--txt3)}
+
+/* Text clamp */
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px;line-height:1.4;color:var(--txt3)}
+
+/* Action tag */
+.act{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10.5px;color:var(--txt2);font-weight:500;white-space:nowrap}
+
+/* Empty */
+.empty{padding:56px 20px;text-align:center;color:var(--txt3)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty p{font-size:13px}
+
+/* ── CARD VIEW ── */
+.cards-grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;animation:up .4s ease both}
+.lead-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;transition:all .22s;position:relative;overflow:hidden}
+.lead-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.lead-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.lc-hot::before{background:var(--hot)} .lc-warm::before{background:var(--warm)}
+.lc-tepid::before{background:var(--tepid)} .lc-cold::before{background:var(--cold)}
+.lc-unqualified::before{background:var(--unq)}
+.lc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.lc-name{font-weight:700;font-size:14px;color:var(--txt)}
+.lc-phone{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);margin-top:2px}
+.lc-score-ring{width:42px;height:42px;position:relative;flex-shrink:0}
+.lc-score-ring svg{transform:rotate(-90deg)}
+.lc-score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:700}
+.lc-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11.5px}
+.lc-k{color:var(--txt3);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.lc-v{color:var(--txt2);text-align:right;font-size:11.5px;max-width:140px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.lc-budget{color:var(--green);font-family:'DM Mono',monospace;font-weight:600}
+.lc-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 16px;font-size:12.5px;color:var(--txt);display:flex;align-items:center;gap:9px;z-index:1000;box-shadow:0 8px 28px rgba(0,0,0,.4);transform:translateY(80px);opacity:0;transition:all .28s cubic-bezier(.4,0,.2,1)}
+.toast.on{transform:translateY(0);opacity:1}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+/* ── Anim ── */
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,.6)}
+  .main{margin-left:0;padding:18px 14px;padding-top:56px}
+  .mb-toggle{display:flex}
+  .tab-bar{width:100%;overflow-x:auto}
+  .search-input{width:150px}
+  .search-input:focus{width:170px}
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .date-inputs{display:none}
+}
+@media(max-width:480px){
+  .cards{grid-template-columns:1fr 1fr;gap:9px}
+  .card{padding:13px 12px}
+  .card-val{font-size:24px}
+  .toolbar-right{width:100%}
+  .search-input{flex:1;width:auto}
+  .cards-grid-view{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<button class="mb-toggle" id="mbToggle" onclick="toggleSidebar()">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar" id="sidebar">
+
+  <div class="logo-row">
+    <div class="logo-mark" id="brandEmoji">🏙️</div>
+    <div class="logo-name">
+      <span id="brandName">Lead Intelligence</span>
+      <small id="brandSub">Kolkata Real Estate</small>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Sheet Config -->
+  <div>
+    <div class="slabel">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      Google Sheets Config
+    </div>
+    <div class="sheet-config">
+      <input class="sc-input" id="sheetUrl" placeholder="Sheet URL or ID" type="text">
+      <input class="sc-input" id="sheetLeads" placeholder="Tab name — Leads" type="text" value="Leads">
+      <input class="sc-input" id="sheetCustomers" placeholder="Tab name — Customers" type="text" value="Customers">
+      <button class="btn-connect" onclick="connectSheet()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        Connect Sheet
+      </button>
+      <div class="connected-badge" id="connBadge" style="display:none">
+        <span class="dot"></span>
+        <span id="connText">Connected · Live</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-client Branding -->
+  <div>
+    <div class="slabel">Per-Client Branding</div>
+    <div class="brand-config">
+      <input class="sc-input" id="bName" placeholder="Agency name" type="text" value="Lead Intelligence" oninput="applyBranding()">
+      <input class="sc-input" id="bSub" placeholder="Tagline / city" type="text" value="Kolkata Real Estate" oninput="applyBranding()">
+      <input class="sc-input" id="bEmoji" placeholder="Emoji logo e.g. 🏡" type="text" value="🏙️" oninput="applyBranding()">
+      <div class="brand-preview">
+        <span class="brand-emoji" id="prevEmoji">🏙️</span>
+        <div class="brand-name-display" id="prevName">Lead Intelligence</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Category filter -->
+  <div>
+    <div class="slabel">Lead Category</div>
+    <div class="chip-row" id="catChips">
+      <span class="chip chip-all on" data-cat="All">All</span>
+      <span class="chip chip-hot" data-cat="Hot">🔥 Hot</span>
+      <span class="chip chip-warm" data-cat="Warm">☀️ Warm</span>
+      <span class="chip chip-tepid" data-cat="Tepid">🌤 Tepid</span>
+      <span class="chip chip-cold" data-cat="Cold">❄️ Cold</span>
+      <span class="chip chip-unq" data-cat="Unqualified">🚫 Unqual.</span>
+    </div>
+  </div>
+
+  <!-- Pipeline Status filter -->
+  <div>
+    <div class="slabel">Pipeline Status</div>
+    <div class="chip-row" id="statusChips">
+      <span class="chip chip-all on" data-st="All">All</span>
+      <span class="chip chip-scored" style="border-color:rgba(16,185,129,.3);color:var(--green)" data-st="Scored">✅ Scored</span>
+      <span class="chip chip-await on" data-st="Awaiting">⏳ Awaiting</span>
+      <span class="chip chip-flag" data-st="Flagged">🚩 Flagged</span>
+    </div>
+  </div>
+
+  <!-- Refresh -->
+  <button class="btn-refresh" id="refreshBtn" onclick="refreshData()">
+    <svg id="rfIco" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    Refresh Data
+  </button>
+
+  <div class="live-row" style="margin-top:auto">
+    <span class="live-dot"></span>
+    <span id="liveTime">--:--</span> · AI Scoring On
+  </div>
+
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-eye">AI-Powered · Real-Time Pipeline</div>
+    <h1 class="hd-title" id="hdTitle">Buyer Lead Intelligence Dashboard</h1>
+    <p class="hd-sub"><b id="hdTotal">0</b> leads tracked · <span id="hdDate">—</span></p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <div class="tab on" data-tab="active" onclick="switchTab('active',this)">
+      🎯 Active Leads
+      <span class="tbadge" id="tbActive">0</span>
+    </div>
+    <div class="tab" data-tab="pipeline" onclick="switchTab('pipeline',this)">
+      🔄 Pipeline
+      <span class="tbadge" id="tbPipeline">0</span>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="cards" id="cardsRow"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="sec-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      <span id="secLabel">Active Leads</span>
+      <span class="row-count" id="rowCount">—</span>
+    </div>
+    <div class="toolbar-right">
+      <!-- Show in Dashboard toggle -->
+      <div class="dash-toggle" id="dashToggle" onclick="toggleDashFilter()">
+        <span class="toggle-sw" id="toggleSw"></span>
+        Show in Dashboard only
+      </div>
+      <!-- View toggle -->
+      <div class="view-toggle">
+        <div class="vt-btn on" id="vtTable" onclick="setView('table')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          Table
+        </div>
+        <div class="vt-btn" id="vtCards" onclick="setView('cards')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Cards
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="search-wrap">
+        <span class="search-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        <input class="search-input" id="searchInput" placeholder="Search leads…" oninput="render()">
+      </div>
+      <!-- Export -->
+      <button class="btn-export" onclick="exportCSV()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Date Range -->
+  <div class="date-row">
+    <span style="font-size:11px;color:var(--txt3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-right:4px">Date:</span>
+    <span class="date-chip on" data-days="0" onclick="setDateFilter(0,this)">All Time</span>
+    <span class="date-chip" data-days="7" onclick="setDateFilter(7,this)">7 Days</span>
+    <span class="date-chip" data-days="14" onclick="setDateFilter(14,this)">14 Days</span>
+    <span class="date-chip" data-days="30" onclick="setDateFilter(30,this)">30 Days</span>
+    <div class="date-inputs">
+      <input class="date-input" type="date" id="dateFrom" onchange="setCustomDate()">
+      <span class="date-sep">→</span>
+      <input class="date-input" type="date" id="dateTo" onchange="setCustomDate()">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div id="tableWrap" class="table-wrap">
+    <table id="leadsTable">
+      <thead><tr id="theadRow"></tr></thead>
+      <tbody id="tableBody"><tr><td colspan="12"><div class="empty"><div class="empty-ico">⏳</div><p>Loading data…</p></div></td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Cards View -->
+  <div id="cardsView" class="cards-grid-view" style="display:none"></div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toastMsg">Done</span></div>
+
+<script>
+// ─────────────────────────────────────────────────────
+// SAMPLE DATA  (Leads tab = scored/active)
+// ─────────────────────────────────────────────────────
+const LEADS_DATA = [
+  {name:"Arjun Chakraborty",phone:"+91 98300 12345",email:"arjun@example.com",budget:"₹85L–1.2Cr",location:"Salt Lake Sector V",propertyType:"3 BHK",bhk:"3BHK",area:"Salt Lake",timeline:"2 months",connectivity:8,environment:7,amenities:9,score:92,category:"Hot",status:"Scored",showInDash:true,source:"99acres",reasoning:"High budget, specific location, 2-month timeline. Very active.",nextAction:"📞 Call within 24hrs",lastUpdated:"2025-04-15T10:22:00Z"},
+  {name:"Priya Banerjee",phone:"+91 97480 67890",email:"priya.b@gmail.com",budget:"₹45L–60L",location:"Rajarhat New Town",propertyType:"2 BHK",bhk:"2BHK",area:"Rajarhat",timeline:"1 month",connectivity:9,environment:6,amenities:8,score:88,category:"Hot",status:"Scored",showInDash:true,source:"MagicBricks",reasoning:"Pre-approved loan, ready to visit sites this weekend.",nextAction:"📅 Schedule site visit",lastUpdated:"2025-04-14T08:11:00Z"},
+  {name:"Subhajit Das",phone:"+91 99030 44321",email:"subhajit.d@work.in",budget:"₹1.5Cr–2Cr",location:"Alipore / Ballygunge",propertyType:"Duplex",bhk:"4BHK",area:"Alipore",timeline:"6 weeks",connectivity:7,environment:9,amenities:9,score:85,category:"Hot",status:"Scored",showInDash:true,source:"Facebook Ad",reasoning:"HNI client looking for premium property. Decision in 6 weeks.",nextAction:"🏠 Premium property tour",lastUpdated:"2025-04-16T14:44:55Z"},
+  {name:"Meghna Ghosh",phone:"+91 91630 55678",email:"meghna@example.com",budget:"₹60L–80L",location:"Garia / Narendrapur",propertyType:"3 BHK",bhk:"3BHK",area:"Garia",timeline:"3–4 months",connectivity:6,environment:7,amenities:7,score:72,category:"Warm",status:"Scored",showInDash:true,source:"Housing.com",reasoning:"Actively searching, budget clarity, comparing 2 projects.",nextAction:"📋 Send project comparison",lastUpdated:"2025-04-13T16:05:00Z"},
+  {name:"Rohit Saha",phone:"+91 84820 33210",email:"",budget:"₹30L–45L",location:"Howrah / Shibpur",propertyType:"2 BHK",bhk:"2BHK",area:"Howrah",timeline:"5 months",connectivity:5,environment:5,amenities:6,score:68,category:"Warm",status:"Scored",showInDash:false,source:"Google Ads",reasoning:"First-time buyer, needs EMI guidance.",nextAction:"🏦 Share loan calculator",lastUpdated:"2025-04-10T09:00:00Z"},
+  {name:"Tanisha Roy",phone:"+91 70459 21098",email:"tanisha.r@corp.com",budget:"₹90L–1.1Cr",location:"EM Bypass / Kasba",propertyType:"3 BHK",bhk:"3BHK",area:"EM Bypass",timeline:"6 months",connectivity:8,environment:7,amenities:8,score:65,category:"Warm",status:"Scored",showInDash:true,source:"Instagram",reasoning:"Couple relocating from Delhi, need 6 months.",nextAction:"📧 Send area guide PDF",lastUpdated:"2025-04-09T11:30:00Z"},
+  {name:"Anirban Mukherjee",phone:"+91 98740 87654",email:"anirban@hni.in",budget:"₹2Cr–3Cr",location:"Golf Green / Tollygunge",propertyType:"Villa",bhk:"4BHK",area:"Tollygunge",timeline:"8–12 months",connectivity:6,environment:8,amenities:8,score:55,category:"Tepid",status:"Scored",showInDash:true,source:"Referral",reasoning:"High budget but very specific requirements. Long timeline.",nextAction:"📸 Send villa catalogue",lastUpdated:"2025-04-08T14:20:00Z"},
+  {name:"Sreya Chatterjee",phone:"+91 93390 12876",email:"",budget:"₹20L–35L",location:"Barasat / Madhyamgram",propertyType:"1 BHK",bhk:"1BHK",area:"Barasat",timeline:"Unclear",connectivity:4,environment:5,amenities:4,score:45,category:"Tepid",status:"Scored",showInDash:false,source:"WhatsApp",reasoning:"Tight budget, limited info, timeline unclear.",nextAction:"📱 Send affordable options",lastUpdated:"2025-04-07T10:00:00Z"},
+  {name:"Debashis Paul",phone:"+91 80130 44567",email:"debashis.p@gmail.com",budget:"₹1.2Cr–2Cr",location:"Salt Lake Sector I",propertyType:"4 BHK",bhk:"4BHK",area:"Salt Lake",timeline:"6+ months",connectivity:7,environment:8,amenities:9,score:38,category:"Cold",status:"Scored",showInDash:true,source:"Walk-in",reasoning:"NRI returning buyer. Investor mindset, long-term horizon.",nextAction:"📊 Send ROI analysis",lastUpdated:"2025-04-16T08:44:55Z"},
+  {name:"Rituparna Dutta",phone:"+91 99990 00123",email:"rituparna@example.com",budget:"₹50L–70L",location:"New Town AA2",propertyType:"2/3 BHK",bhk:"2BHK",area:"New Town",timeline:"1+ year",connectivity:7,environment:6,amenities:7,score:30,category:"Cold",status:"Scored",showInDash:false,source:"99acres",reasoning:"Waiting for price correction. No urgency.",nextAction:"📅 Add to drip campaign",lastUpdated:"2025-04-05T09:00:00Z"},
+  {name:"Koushik Sen",phone:"+91 77770 98321",email:"",budget:"Not specified",location:"Anywhere",propertyType:"Not specified",bhk:"—",area:"—",timeline:"—",connectivity:0,environment:0,amenities:0,score:12,category:"Unqualified",status:"Scored",showInDash:false,source:"Cold Call",reasoning:"Very low information. Only name and phone.",nextAction:"📝 Send intake form",lastUpdated:"2025-04-04T12:00:00Z"},
+  {name:"Amit Bose",phone:"+91 98310 76543",email:"amit.bose@example.com",budget:"₹70L–95L",location:"Behala / Joka",propertyType:"3 BHK",bhk:"3BHK",area:"Behala",timeline:"3–4 months",connectivity:5,environment:7,amenities:6,score:60,category:"Warm",status:"Flagged",showInDash:true,source:"MagicBricks",reasoning:"Decent interest, family decision. Needs follow-up call.",nextAction:"🤝 Family meet & greet",lastUpdated:"2025-04-12T15:00:00Z"},
+];
+
+// PIPELINE data (awaiting form / nurture)
+const PIPELINE_DATA = [
+  {name:"Suman Pal",phone:"+91 98310 11111",email:"",budget:"—",location:"—",propertyType:"—",bhk:"—",area:"—",timeline:"—",connectivity:0,environment:0,amenities:0,score:0,category:"—",status:"Awaiting",showInDash:true,source:"Manual",reasoning:"Form sent. Waiting for customer to fill.",nextAction:"⏳ Awaiting form",lastUpdated:"2025-04-15T09:00:00Z"},
+  {name:"Lipika Nath",phone:"+91 96320 22222",email:"lipika@example.com",budget:"—",location:"—",propertyType:"—",bhk:"—",area:"—",timeline:"—",connectivity:0,environment:0,amenities:0,score:0,category:"—",status:"Awaiting",showInDash:false,source:"Form",reasoning:"Low-info form submission. Nurture email sent.",nextAction:"📧 Nurture in progress",lastUpdated:"2025-04-14T11:00:00Z"},
+  {name:"Partha Sarathi",phone:"+91 93300 33333",email:"partha@example.com",budget:"—",location:"—",propertyType:"—",bhk:"—",area:"—",timeline:"—",connectivity:0,environment:0,amenities:0,score:0,category:"—",status:"Flagged",showInDash:true,source:"Email Reply",reasoning:"Reply intent unclear. Requires manual conversation.",nextAction:"🚩 Manual review needed",lastUpdated:"2025-04-13T16:00:00Z"},
+  {name:"Moumita Sen",phone:"+91 88880 44444",email:"moumita@example.com",budget:"—",location:"—",propertyType:"—",bhk:"—",area:"—",timeline:"—",connectivity:0,environment:0,amenities:0,score:0,category:"—",status:"Awaiting",showInDash:true,source:"Vision Upload",reasoning:"Extracted from handwritten list. Email sent, awaiting form.",nextAction:"⏳ Awaiting form",lastUpdated:"2025-04-12T10:00:00Z"},
+];
+
+// ─── STATE ───
+let currentTab = 'active';
+let currentCat = 'All';
+let currentStatus = 'All';
+let currentView = 'table';
+let dashOnly = false;
+let dateFilterDays = 0;
+let dateFrom = null, dateTo = null;
+let sortKey = 'score', sortDir = -1;
+let autoTimer = null;
+
+// ─── INIT ───
+function init() {
+  buildCatChips();
+  buildStatusChips();
+  applyBranding();
+  render();
+  updateClock();
+  setInterval(updateClock, 1000);
+  buildTabCounts();
+}
+
+// ─── BRANDING ───
+function applyBranding() {
+  const name = document.getElementById('bName').value || 'Lead Intelligence';
+  const sub = document.getElementById('bSub').value || 'Kolkata Real Estate';
+  const emoji = document.getElementById('bEmoji').value || '🏙️';
+  document.getElementById('brandName').textContent = name;
+  document.getElementById('brandSub').textContent = sub;
+  document.getElementById('brandEmoji').textContent = emoji;
+  document.getElementById('prevEmoji').textContent = emoji;
+  document.getElementById('prevName').textContent = name;
+  document.getElementById('hdTitle').textContent = name + ' — Lead Dashboard';
+}
+
+// ─── SHEET CONNECT ───
+function connectSheet() {
+  const url = document.getElementById('sheetUrl').value.trim();
+  if (!url) { showToast('⚠️ Enter a Sheet URL or ID first'); return; }
+  showToast('🔄 Connecting to Google Sheets…');
+  setTimeout(() => {
+    document.getElementById('connBadge').style.display = 'flex';
+    document.getElementById('connText').textContent = 'Connected · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    showToast('✅ Sheet connected — showing live data');
+    // In production: fetch from Sheets API here and call render()
+  }, 1400);
+}
+
+// ─── TABS ───
+function buildTabCounts() {
+  document.getElementById('tbActive').textContent = LEADS_DATA.length;
+  document.getElementById('tbPipeline').textContent = PIPELINE_DATA.length;
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('secLabel').textContent = tab === 'active' ? 'Active Leads' : 'Pipeline';
+  render();
+}
+
+// ─── CHIPS ───
+function buildCatChips() {
+  document.getElementById('catChips').addEventListener('click', e => {
+    const c = e.target.closest('[data-cat]');
+    if (!c) return;
+    currentCat = c.dataset.cat;
+    document.querySelectorAll('#catChips [data-cat]').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    render();
+  });
+}
+function buildStatusChips() {
+  document.getElementById('statusChips').addEventListener('click', e => {
+    const c = e.target.closest('[data-st]');
+    if (!c) return;
+    currentStatus = c.dataset.st;
+    document.querySelectorAll('#statusChips [data-st]').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    render();
+  });
+}
+
+// ─── DASH FILTER ───
+function toggleDashFilter() {
+  dashOnly = !dashOnly;
+  const el = document.getElementById('dashToggle');
+  el.classList.toggle('on', dashOnly);
+  render();
+}
+
+// ─── DATE FILTER ───
+function setDateFilter(days, el) {
+  dateFilterDays = days; dateFrom = null; dateTo = null;
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+function setCustomDate() {
+  dateFrom = document.getElementById('dateFrom').value;
+  dateTo = document.getElementById('dateTo').value;
+  dateFilterDays = -1;
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('on'));
+  render();
+}
+
+// ─── VIEW TOGGLE ───
+function setView(v) {
+  currentView = v;
+  document.getElementById('vtTable').classList.toggle('on', v === 'table');
+  document.getElementById('vtCards').classList.toggle('on', v === 'cards');
+  document.getElementById('tableWrap').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('cardsView').style.display = v === 'cards' ? 'grid' : 'none';
+  render();
+}
+
+// ─── SORT ───
+function sortBy(key) {
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = key === 'score' ? -1 : 1; }
+  render();
+}
+
+// ─── FILTER + RENDER ───
+function getData() {
+  return currentTab === 'active' ? LEADS_DATA : PIPELINE_DATA;
+}
+
+function applyFilters(data) {
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  const now = new Date();
+  return data.filter(l => {
+    if (currentCat !== 'All' && l.category !== currentCat) return false;
+    if (currentStatus !== 'All' && l.status !== currentStatus) return false;
+    if (dashOnly && !l.showInDash) return false;
+    if (dateFilterDays > 0) {
+      const d = new Date(l.lastUpdated);
+      if ((now - d) / 86400000 > dateFilterDays) return false;
+    }
+    if (dateFrom && dateTo) {
+      const d = new Date(l.lastUpdated);
+      if (d < new Date(dateFrom) || d > new Date(dateTo + 'T23:59:59')) return false;
+    }
+    if (search) {
+      const hay = [l.name,l.phone,l.location,l.propertyType,l.source,l.category,l.status,l.area,l.bhk,l.budget].join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  let data = applyFilters(getData());
+
+  // Sort
+  data.sort((a,b) => {
+    let av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+
+  document.getElementById('rowCount').textContent = data.length + ' row' + (data.length !== 1 ? 's' : '');
+  updateCards(getData());
+
+  if (currentView === 'table') renderTable(data);
+  else renderCards(data);
+}
+
+// ─── CARDS ───
+function updateCards(data) {
+  const hot = data.filter(l=>l.category==='Hot').length;
+  const warm = data.filter(l=>l.category==='Warm').length;
+  const cold = data.filter(l=>l.category==='Cold').length;
+  const await_ = data.filter(l=>l.status==='Awaiting').length;
+  const flagged = data.filter(l=>l.status==='Flagged').length;
+  const avg = data.length ? Math.round(data.filter(l=>l.score>0).reduce((s,l)=>s+l.score,0)/(data.filter(l=>l.score>0).length||1)) : 0;
+
+  const def = currentTab === 'active' ? [
+    {cls:'c-total',ico:'📊',val:data.length,lbl:'Total'},
+    {cls:'c-hot',ico:'🔥',val:hot,lbl:'Hot'},
+    {cls:'c-warm',ico:'☀️',val:warm,lbl:'Warm'},
+    {cls:'c-cold',ico:'❄️',val:cold,lbl:'Cold'},
+    {cls:'c-avg',ico:'⚡',val:avg,lbl:'Avg Score'},
+  ] : [
+    {cls:'c-total',ico:'📊',val:data.length,lbl:'Pipeline'},
+    {cls:'c-await',ico:'⏳',val:await_,lbl:'Awaiting'},
+    {cls:'c-flag',ico:'🚩',val:flagged,lbl:'Flagged'},
+    {cls:'c-warm',ico:'📧',val:data.filter(l=>l.status==='Awaiting'&&l.showInDash).length,lbl:'In Dashboard'},
+  ];
+
+  const row = document.getElementById('cardsRow');
+  row.innerHTML = def.map((c,i)=>`
+    <div class="card ${c.cls}" style="animation-delay:${i*0.05}s">
+      <div class="card-ico">${c.ico}</div>
+      <div class="card-val" id="cv_${i}">${c.val}</div>
+      <div class="card-lbl">${c.lbl}</div>
+    </div>`).join('');
+  document.getElementById('hdTotal').textContent = getData().length;
+}
+
+// ─── TABLE ───
+function renderTable(data) {
+  const isActive = currentTab === 'active';
+  const thead = document.getElementById('theadRow');
+  const cols = isActive
+    ? ['name','phone','budget','location','bhk','connectivity','environment','amenities','score','category','status','nextAction']
+    : ['name','phone','location','status','showInDash','nextAction','lastUpdated'];
+
+  const labels = {
+    name:'Buyer Name',phone:'Phone',budget:'Budget',location:'Location',bhk:'BHK',
+    connectivity:'Connectivity',environment:'Environment',amenities:'Amenities',
+    score:'Score',category:'Category',status:'Status',nextAction:'Next Action',
+    showInDash:'In Dashboard',lastUpdated:'Last Updated'
+  };
+
+  thead.innerHTML = cols.map(k => `<th onclick="sortBy('${k}')" class="${sortKey===k?'sorted':''}">
+    ${labels[k]||k} <span class="si">${sortKey===k?(sortDir===1?'↑':'↓'):'⇅'}</span>
+  </th>`).join('');
+
+  const tbody = document.getElementById('tableBody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}"><div class="empty"><div class="empty-ico">🔍</div><p>No leads match your filters</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((l,i) => {
+    const cat = (l.category||'').toLowerCase().replace(/[^a-z]/g,'');
+    const scoreCls = {hot:'sh',warm:'sw',tepid:'st',cold:'sc',unqualified:'su'}[cat]||'sc';
+    const catBadgeCls = {hot:'b-hot',warm:'b-warm',tepid:'b-tepid',cold:'b-cold',unqualified:'b-unq'}[cat]||'b-cold';
+    const stCls = {Scored:'b-scored',Awaiting:'b-await',Flagged:'b-flag'}[l.status]||'b-cold';
+
+    const cells = cols.map(k => {
+      switch(k) {
+        case 'name': return `<td class="td-name">${l.name}</td>`;
+        case 'phone': return `<td class="td-phone">${l.phone}</td>`;
+        case 'budget': return `<td class="td-budget">${l.budget}</td>`;
+        case 'score': return `<td><div class="score-cell ${scoreCls}"><span class="score-num">${l.score||'—'}</span><div class="score-bar-wrap"><div class="score-bar" style="width:${l.score||0}%"></div></div></div></td>`;
+        case 'category': return l.category && l.category!=='—'
+          ? `<td><span class="badge ${catBadgeCls}"><span class="bd"></span>${l.category}</span></td>`
+          : `<td><span style="color:var(--txt3);font-size:11px">—</span></td>`;
+        case 'status': return `<td><span class="badge ${stCls}"><span class="bd"></span>${l.status}</span></td>`;
+        case 'showInDash': return `<td><span style="font-size:11px;color:${l.showInDash?'var(--green)':'var(--txt3)'}">${l.showInDash?'✅ Yes':'— No'}</span></td>`;
+        case 'connectivity': return `<td><span class="act">${l.connectivity||'—'}/10</span></td>`;
+        case 'environment': return `<td><span class="act">${l.environment||'—'}/10</span></td>`;
+        case 'amenities': return `<td><span class="act">${l.amenities||'—'}/10</span></td>`;
+        case 'nextAction': return `<td><span class="act">${l.nextAction}</span></td>`;
+        case 'lastUpdated': return `<td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3)">${l.lastUpdated?new Date(l.lastUpdated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'}):'—'}</td>`;
+        default: return `<td>${l[k]||'—'}</td>`;
+      }
+    }).join('');
+    return `<tr style="animation-delay:${i*0.03}s">${cells}</tr>`;
+  }).join('');
+}
+
+// ─── CARD VIEW ───
+function renderCards(data) {
+  const view = document.getElementById('cardsView');
+  if (!data.length) {
+    view.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-ico">🔍</div><p>No leads match your filters</p></div>`;
+    return;
+  }
+  view.innerHTML = data.map(l => {
+    const cat = (l.category||'').toLowerCase().replace(/[^a-z]/g,'');
+    const stCls = {Scored:'b-scored',Awaiting:'b-await',Flagged:'b-flag'}[l.status]||'b-cold';
+    const catBadge = l.category && l.category!=='—' ? `<span class="badge b-${cat==='hot'?'hot':cat==='warm'?'warm':cat==='tepid'?'tepid':cat==='cold'?'cold':'unq'}"><span class="bd"></span>${l.category}</span>` : '';
+    const scoreColor = l.score>=80?'var(--hot)':l.score>=60?'var(--warm)':l.score>=40?'var(--tepid)':'var(--cold)';
+    const r = 17, circ = 2*Math.PI*r;
+    const pct = l.score ? circ-(l.score/100)*circ : circ;
+    return `
+    <div class="lead-card lc-${cat||'cold'}">
+      <div class="lc-header">
+        <div>
+          <div class="lc-name">${l.name}</div>
+          <div class="lc-phone">${l.phone}</div>
+        </div>
+        ${l.score ? `<div class="lc-score-ring">
+          <svg width="42" height="42" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="${r}" fill="none" stroke="var(--border)" stroke-width="3"/>
+            <circle cx="21" cy="21" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="3"
+              stroke-dasharray="${circ}" stroke-dashoffset="${pct}" stroke-linecap="round"/>
+          </svg>
+          <div class="lc-score-num" style="color:${scoreColor}">${l.score}</div>
+        </div>` : ''}
+      </div>
+      ${l.budget&&l.budget!=='—'?`<div class="lc-row"><span class="lc-k">Budget</span><span class="lc-budget">${l.budget}</span></div>`:''}
+      ${l.location&&l.location!=='—'?`<div class="lc-row"><span class="lc-k">Location</span><span class="lc-v">${l.location}</span></div>`:''}
+      ${l.bhk&&l.bhk!=='—'?`<div class="lc-row"><span class="lc-k">BHK</span><span class="lc-v">${l.bhk}</span></div>`:''}
+      ${l.timeline&&l.timeline!=='—'?`<div class="lc-row"><span class="lc-k">Timeline</span><span class="lc-v">${l.timeline}</span></div>`:''}
+      ${l.connectivity?`<div class="lc-row"><span class="lc-k">Connectivity / Env / Amenities</span><span class="lc-v">${l.connectivity} / ${l.environment} / ${l.amenities}</span></div>`:''}
+      <div class="lc-footer">
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${catBadge}
+          <span class="badge ${stCls}"><span class="bd"></span>${l.status}</span>
+        </div>
+        <span class="act">${l.nextAction}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── EXPORT CSV ───
+function exportCSV() {
+  const data = applyFilters(getData());
+  if (!data.length) { showToast('⚠️ No data to export'); return; }
+  const keys = Object.keys(data[0]).filter(k=>k!=='reasoning');
+  const csv = [keys.join(','), ...data.map(l=>keys.map(k=>`"${String(l[k]||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'leads_export_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('✅ CSV exported — ' + data.length + ' rows');
+}
+
+// ─── REFRESH ───
+function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  const ico = document.getElementById('rfIco');
+  ico.classList.add('spin');
+  btn.disabled = true;
+  setTimeout(() => {
+    render();
+    ico.classList.remove('spin');
+    btn.disabled = false;
+    showToast('✅ Data refreshed');
+  }, 1000);
+}
+
+// ─── CLOCK ───
+function updateClock() {
+  const now = new Date();
+  document.getElementById('liveTime').textContent = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('hdDate').textContent = now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('on');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('on'), 3000);
+}
+
+// ─── SIDEBAR ───
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('on');
+}
+
+// ─── BOOT ───
+init();
+</script>
+</body>
+</html>
