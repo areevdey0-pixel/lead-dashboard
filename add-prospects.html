@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Prospects — Kolkata AI Automation</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #05080b;
+  --s1:     #0d1318;
+  --s2:     #111920;
+  --border: #1a2d3d;
+  --accent: #00e676;
+  --gold:   #ffb700;
+  --red:    #ff4136;
+  --text:   #ddeeff;
+  --muted:  #4d7a99;
+  --dim:    #253d50;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  padding:0 0 60px;
+}
+
+/* TOPBAR */
+.topbar {
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.logo {
+  font-size:15px;font-weight:700;
+  letter-spacing:-.02em;
+}
+.logo span { color:var(--accent); }
+.status-dot {
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+.main { max-width:600px; margin:0 auto; padding:24px 16px; }
+
+/* SECTION */
+.section-label {
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;
+}
+
+/* TEXTAREA */
+.dump-box {
+  width:100%;
+  min-height:260px;
+  background:var(--s1);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  line-height:1.7;
+  resize:vertical;
+  outline:none;
+  transition:border-color .2s;
+}
+.dump-box:focus { border-color:var(--accent); }
+.dump-box::placeholder { color:var(--dim); }
+
+.hint {
+  font-size:12px;color:var(--muted);
+  margin-top:8px;line-height:1.6;
+}
+.hint b { color:var(--accent); }
+
+/* SUBMIT BTN */
+.submit-btn {
+  width:100%;
+  margin-top:16px;
+  padding:16px;
+  background:var(--accent);
+  color:#000;
+  border:none;border-radius:12px;
+  font-family:'Outfit',sans-serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.submit-btn:hover { opacity:.88;transform:translateY(-1px); }
+.submit-btn:disabled { opacity:.4;cursor:not-allowed;transform:none; }
+
+/* SPINNER */
+.spin {
+  width:18px;height:18px;
+  border:2.5px solid rgba(0,0,0,.3);
+  border-top-color:#000;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULT PANEL */
+.result {
+  margin-top:20px;
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  display:none;
+}
+.result.show { display:block; }
+
+.result-head {
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:600;
+}
+.result-head.ok { color:var(--accent); }
+.result-head.err { color:var(--red); }
+
+.result-body { padding:14px 16px; }
+
+/* AGENCY CARD */
+.agency-card {
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+}
+.agency-card:last-child { margin-bottom:0; }
+
+.agency-name {
+  font-size:15px;font-weight:700;
+  margin-bottom:4px;color:var(--text);
+}
+.agency-loc {
+  font-size:12px;color:var(--muted);
+  margin-bottom:10px;
+}
+.agency-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.agency-field { font-size:11px; }
+.agency-field-lbl {
+  color:var(--dim);
+  font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:2px;
+}
+.agency-field-val { color:var(--text); }
+.agency-problem {
+  margin-top:10px;
+  font-size:12px;color:var(--muted);
+  line-height:1.5;
+  border-top:1px solid var(--border);
+  padding-top:8px;
+}
+.agency-problem b { color:var(--gold);font-weight:600; }
+
+/* BADGE */
+.badge-ok {
+  display:inline-block;
+  background:rgba(0,230,118,.12);
+  color:var(--accent);
+  border:1px solid rgba(0,230,118,.25);
+  border-radius:6px;
+  padding:3px 10px;
+  font-size:11px;font-weight:600;
+}
+
+/* EXAMPLE */
+.example-toggle {
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted);
+  cursor:pointer;margin-top:10px;
+  background:none;border:none;padding:0;
+  font-family:'Outfit',sans-serif;
+}
+.example-toggle:hover { color:var(--accent); }
+.example-box {
+  display:none;
+  margin-top:10px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.7;
+  white-space:pre-wrap;
+}
+.example-box.show { display:block; }
+
+/* TOAST */
+.toast {
+  position:fixed;bottom:20px;right:16px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:13px;
+  transform:translateY(60px);opacity:0;
+  transition:all .28s ease;z-index:999;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:var(--accent);color:var(--accent);}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+.divider {
+  border:none;
+  border-top:1px solid var(--border);
+  margin:20px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="topbar">
+  <div class="logo">Kolkata AI <span>Prospects</span></div>
+  <div class="status-dot"></div>
+</div>
+
+<div class="main">
+
+  <div style="margin-bottom:20px;">
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px">
+      Dump Scraped Data
+    </div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6">
+      Paste raw notes, screenshots text, or copied agency info below. Gemini will extract and write everything to your sheet automatically.
+    </div>
+  </div>
+
+  <div class="section-label">Raw Data</div>
+  <textarea
+    class="dump-box"
+    id="rawText"
+    placeholder="Paste everything here — agency names, phone numbers, reviews, locations, ratings, anything. One agency or twenty. Messy is fine."
+  ></textarea>
+
+  <div class="hint">
+    Works with any format — copy-pasted Google Maps text, notes app dumps, screenshots typed out, or structured lists. <b>Gemini handles the rest.</b>
+  </div>
+
+  <button class="example-toggle" onclick="toggleExample()">
+    ▸ See example input format
+  </button>
+  <div class="example-box" id="exampleBox">DAS Realtors Rajarhat Rekjuani, near Axis Bank, Kolkata N/A (JustDial listed) +91 92319 45597 N/A 4.7 / 5 28 I paid ₹2,50,000 for brokerage — very rude and unprofessional. FRAUD. Nice work, enjoyed working with them.
+
+Bengal Shelter Housing Development Ltd CB-63, Sector I, Salt Lake City, Kolkata +91 33 2337 7302 corporate@bengalshelter.com 3.5 / 5 53 Booked a flat 7 months ago, made full payment — not handed over yet.
+
+Srijan Realty (Town Square) BB Block, Action Area I, New Town +91 98741 24940 srijanrealty.com N/A 4.8 / 5 163 Nice staff and great demonstration. Specially Sumonto is knowledgeable.</div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitData()">
+    <div class="spin" id="spinner"></div>
+    <span id="btnText">⚡ Extract &amp; Save to Sheet</span>
+  </button>
+
+  <div class="result" id="resultPanel">
+    <div class="result-head" id="resultHead"></div>
+    <div class="result-body" id="resultBody"></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════
+// CONFIG
+// ══════════════════════════════════
+const WEBHOOK = 'https://zetu.app.n8n.cloud/webhook/add-prospect';
+// ══════════════════════════════════
+
+function toggleExample() {
+  const box = document.getElementById('exampleBox');
+  const btn = document.querySelector('.example-toggle');
+  const show = box.classList.toggle('show');
+  btn.textContent = (show ? '▾' : '▸') + ' See example input format';
+}
+
+async function submitData() {
+  const raw = document.getElementById('rawText').value.trim();
+  if (!raw || raw.length < 10) {
+    showToast('Please paste some data first', 'err');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: raw }),
+      mode: 'no-cors'
+    });
+
+    // no-cors means we can't read response
+    // show success after 3s delay for n8n processing
+    await new Promise(r => setTimeout(r, 3000));
+
+    setLoading(false);
+    showSuccess(raw);
+    showToast('Sent to n8n — processing now', 'ok');
+
+  } catch(err) {
+    setLoading(false);
+    showError(err.message);
+    showToast('Error: ' + err.message, 'err');
+  }
+}
+
+function showSuccess(raw) {
+  const panel = document.getElementById('resultPanel');
+  const head  = document.getElementById('resultHead');
+  const body  = document.getElementById('resultBody');
+
+  head.className = 'result-head ok';
+  head.innerHTML = '✓ Sent to Gemini for extraction';
+
+  // Count rough agency count by looking for common patterns
+  const lines = raw.split('\n').filter(l => l.trim().length > 5);
+  const estCount = Math.max(1, Math.floor(lines.length / 4));
+
+  body.innerHTML = `
+    <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+      Your data is being processed. Gemini will extract each agency and write them directly to your <b style="color:var(--text)">Agency Research</b> sheet.
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px 14px;font-size:13px">
+        <div style="color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Est. agencies</div>
+        <div style="color:var(--accent);font-size:20px;font-weight:700">~${estCount}</div>
+      </div>
+      <div style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px 14px;font-size:13px">
+        <div style="color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Status</div>
+        <div style="color:var(--accent);font-size:14px;font-weight:600;margin-top:3px">Writing to sheet…</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--dim)">
+      ✦ Check your Google Sheet in ~15 seconds — new rows will appear at the bottom of Agency Research tab.<br>
+      ✦ Dashboard will show them on next Sync All.
+    </div>
+  `;
+
+  panel.classList.add('show');
+  document.getElementById('rawText').value = '';
+}
+
+function showError(msg) {
+  const panel = document.getElementById('resultPanel');
+  const head  = document.getElementById('resultHead');
+  const body  = document.getElementById('resultBody');
+  head.className = 'result-head err';
+  head.innerHTML = '✕ Something went wrong';
+  body.innerHTML = `<div style="font-size:13px;color:var(--muted)">${msg}<br><br>Make sure your n8n workflow is published and the webhook is active.</div>`;
+  panel.classList.add('show');
+}
+
+function setLoading(on) {
+  const btn  = document.getElementById('submitBtn');
+  const spin = document.getElementById('spinner');
+  const txt  = document.getElementById('btnText');
+  btn.disabled = on;
+  spin.style.display = on ? 'block' : 'none';
+  txt.textContent = on ? 'Processing…' : '⚡ Extract & Save to Sheet';
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3200);
+}
+</script>
+</body>
+</html>
