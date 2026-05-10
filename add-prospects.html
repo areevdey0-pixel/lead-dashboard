@@ -308,11 +308,13 @@ async function submitData() {
 
   try {
     const res = await fetch(WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: raw }),
-      mode: 'no-cors'
-    });
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  body: JSON.stringify({ text: raw })
+});
 
     // no-cors means we can't read response
     // show success after 3s delay for n8n processing
