@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Data — Kolkata AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #06090c;
+  --s1:     #0c1217;
+  --s2:     #111a22;
+  --border: #1b2f3f;
+  --accent: #00e5ff;
+  --green:  #00e676;
+  --red:    #ff4444;
+  --gold:   #ffb700;
+  --text:   #d8eeff;
+  --muted:  #4a7a99;
+  --dim:    #1e3547;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  min-height:100vh;
+  padding-bottom:80px;
+}
+
+/* TOPBAR */
+.topbar{
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-size:15px;font-weight:800;letter-spacing:-.02em;}
+.logo span{color:var(--accent);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+.main{max-width:680px;margin:0 auto;padding:28px 16px;}
+
+.page-title{font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+.page-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:28px;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:24px;}
+.tab{
+  flex:1;padding:10px;border:none;border-radius:7px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;
+}
+.tab.active{background:var(--accent);color:#000;}
+
+/* SECTION */
+.section{display:none;}
+.section.active{display:block;}
+
+.slabel{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+
+/* DUMP BOX */
+.dump-box{
+  width:100%;min-height:280px;
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:12px;padding:16px;
+  color:var(--text);font-family:'JetBrains Mono',monospace;
+  font-size:13px;line-height:1.75;resize:vertical;outline:none;
+  transition:border-color .2s;
+}
+.dump-box:focus{border-color:var(--accent);}
+.dump-box::placeholder{color:var(--dim);}
+
+.hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;}
+.hint b{color:var(--accent);}
+
+/* STRUCTURED FORM */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.field-grid.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.flbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.finput,.fselect,.ftextarea{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:8px;padding:11px 13px;
+  color:var(--text);font-family:'Syne',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s;width:100%;
+}
+.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--accent);}
+.finput::placeholder,.ftextarea::placeholder{color:var(--dim);}
+.fselect{appearance:none;cursor:pointer;}
+.fselect option{background:var(--s2);}
+.ftextarea{resize:vertical;min-height:80px;line-height:1.6;}
+
+/* MULTI ROW */
+.multi-hint{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.customer-row{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:10px;padding:14px;margin-bottom:10px;position:relative;
+}
+.row-num{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
+.remove-btn{
+  position:absolute;top:12px;right:12px;
+  background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.2);
+  color:var(--red);border-radius:6px;padding:4px 10px;
+  font-size:11px;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;
+}
+.add-row-btn{
+  width:100%;padding:12px;margin-top:4px;
+  background:transparent;border:1.5px dashed var(--border);
+  border-radius:10px;color:var(--muted);
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* EXAMPLE */
+.example-toggle{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted);cursor:pointer;
+  background:none;border:none;padding:0;margin-top:10px;
+  font-family:'Syne',sans-serif;
+}
+.example-toggle:hover{color:var(--accent);}
+.example-box{
+  display:none;margin-top:10px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:12px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);line-height:1.7;white-space:pre-wrap;
+}
+.example-box.show{display:block;}
+
+/* SUBMIT */
+.submit-btn{
+  width:100%;margin-top:20px;padding:16px;
+  background:var(--accent);color:#000;
+  border:none;border-radius:12px;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.submit-btn:hover{opacity:.88;transform:translateY(-1px);}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+.spin{width:18px;height:18px;border:2.5px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULT */
+.result{margin-top:20px;background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:none;}
+.result.show{display:block;}
+.result-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;}
+.result-head.ok{color:var(--green);}
+.result-head.err{color:var(--red);}
+.result-body{padding:14px 16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:16px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .28s ease;z-index:999;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:var(--green);color:var(--green);}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+@media(max-width:500px){
+  .field-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="topbar">
+  <div class="logo">Kolkata AI <span>Clients</span></div>
+  <div class="dot"></div>
+</div>
+
+<div class="main">
+
+  <div class="page-title">Add Customers</div>
+  <div class="page-sub">Dump raw customer data or fill structured fields. Groq AI will extract and write everything to your sheet automatically.</div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dump')">📋 Raw Dump</button>
+    <button class="tab" onclick="switchTab('structured')">✏️ Structured</button>
+    <button class="tab" onclick="switchTab('multi')">📦 Bulk Entry</button>
+  </div>
+
+  <!-- TAB 1: RAW DUMP -->
+  <div class="section active" id="tab-dump">
+    <div class="slabel">Paste anything</div>
+    <textarea class="dump-box" id="rawText" placeholder="Paste raw customer info here — names, phone numbers, emails, locations, budgets, timelines, notes, WhatsApp chats, visiting card text, anything. One customer or twenty. Messy is fine."></textarea>
+    <div class="hint">Works with any format — copied chats, notes app dumps, visiting card text, or structured lists. <b>Groq AI handles the rest.</b></div>
+    <button class="example-toggle" onclick="toggleExample()">▸ See example input</button>
+    <div class="example-box" id="exampleBox">Arjun Chakraborty +91 98300 12345 arjun.c@gmail.com looking for 3BHK in Salt Lake Sector V, budget 80L-1.2Cr, needs 2 car parking east facing, timeline 1-3 months
+
+Rohit Saha 84820 33210 no email, 2BHK Howrah below 50L, home loan needed first time buyer, saw on 99acres
+
+Tanisha Roy tanisha.roy@gmail.com 70459 21098 3BHK EM Bypass 80L-1.2Cr relocating from Delhi needs furnished, 3-6 months, came from Instagram</div>
+
+    <button class="submit-btn" id="dumpBtn" onclick="submitDump()">
+      <div class="spin" id="dumpSpin"></div>
+      <span id="dumpTxt">⚡ Extract &amp; Save to Sheet</span>
+    </button>
+  </div>
+
+  <!-- TAB 2: STRUCTURED -->
+  <div class="section" id="tab-structured">
+    <div class="field-grid">
+      <div class="field">
+        <label class="flbl">Full Name *</label>
+        <input class="finput" id="s_name" placeholder="Arjun Chakraborty">
+      </div>
+      <div class="field">
+        <label class="flbl">Phone *</label>
+        <input class="finput" id="s_phone" placeholder="+91 98300 12345">
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="flbl">Email</label>
+        <input class="finput" id="s_email" type="email" placeholder="arjun@gmail.com">
+      </div>
+      <div class="field">
+        <label class="flbl">Property Type</label>
+        <select class="fselect" id="s_proptype">
+          <option value="">Select type</option>
+          <option>2BHK</option>
+          <option>3BHK</option>
+          <option>4BHK</option>
+          <option>Villa</option>
+          <option>Plot</option>
+          <option>Commercial</option>
+          <option>Not specified</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="flbl">Preferred Location</label>
+        <input class="finput" id="s_location" placeholder="Salt Lake, New Town...">
+      </div>
+      <div class="field">
+        <label class="flbl">Budget</label>
+        <select class="fselect" id="s_budget">
+          <option value="">Select budget</option>
+          <option>Below 50L</option>
+          <option>50L-80L</option>
+          <option>80L-1.2Cr</option>
+          <option>1.2Cr-2Cr</option>
+          <option>Above 2Cr</option>
+          <option>Not decided</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="flbl">Timeline</label>
+        <select class="fselect" id="s_timeline">
+          <option value="">Select timeline</option>
+          <option>Within 1 month</option>
+          <option>1-3 months</option>
+          <option>3-6 months</option>
+          <option>6+ months</option>
+          <option>Just browsing</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="flbl">Source</label>
+        <select class="fselect" id="s_source">
+          <option value="">How did they come?</option>
+          <option>Buyer Intake Form</option>
+          <option>Walk-in</option>
+          <option>Referral</option>
+          <option>Cold Call</option>
+          <option>99acres</option>
+          <option>MagicBricks</option>
+          <option>Instagram</option>
+          <option>WhatsApp Campaign</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid full">
+      <div class="field">
+        <label class="flbl">Notes</label>
+        <textarea class="ftextarea" id="s_notes" placeholder="Any special requirements, context, or details..."></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="structBtn" onclick="submitStructured()">
+      <div class="spin" id="structSpin"></div>
+      <span id="structTxt">⚡ Save to Sheet</span>
+    </button>
+  </div>
+
+  <!-- TAB 3: BULK / MULTI ROW -->
+  <div class="section" id="tab-multi">
+    <div class="multi-hint">Add multiple customers one by one. All will be saved together.</div>
+    <div id="multiRows"></div>
+    <button class="add-row-btn" onclick="addRow()">+ Add Another Customer</button>
+
+    <button class="submit-btn" id="multiBtn" onclick="submitMulti()">
+      <div class="spin" id="multiSpin"></div>
+      <span id="multiTxt">⚡ Save All to Sheet</span>
+    </button>
+  </div>
+
+  <div class="result" id="resultPanel">
+    <div class="result-head" id="resultHead"></div>
+    <div class="result-body" id="resultBody"></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG — update this URL
+// ══════════════════════════════════════
+const WEBHOOK = 'https://zetu.app.n8n.cloud/webhook/buyer-intake-form';
+// ══════════════════════════════════════
+
+// TAB SWITCHING
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  hideResult();
+}
+
+// EXAMPLE TOGGLE
+function toggleExample() {
+  const box = document.getElementById('exampleBox');
+  const btn = document.querySelector('.example-toggle');
+  const show = box.classList.toggle('show');
+  btn.textContent = (show ? '▾' : '▸') + ' See example input';
+}
+
+// ── TAB 1: RAW DUMP ──
+async function submitDump() {
+  const raw = document.getElementById('rawText').value.trim();
+  if (!raw || raw.length < 10) { showToast('Paste some data first', 'err'); return; }
+  setLoading('dump', true);
+  try {
+    await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: raw, mode: 'dump' }),
+      mode: 'no-cors'
+    });
+    await new Promise(r => setTimeout(r, 2500));
+    setLoading('dump', false);
+    showResult('ok', '✓ Sent for AI extraction', `Groq AI is extracting customer details and writing to your <b style="color:var(--text)">Customers</b> sheet.<br><br><span style="color:var(--dim);font-size:12px">✦ Check your sheet in ~15 seconds — new rows will appear at the bottom.<br>✦ Status will be set to "New" — ready for the pipeline to process.</span>`);
+    document.getElementById('rawText').value = '';
+    showToast('Sent to n8n — processing', 'ok');
+  } catch(err) {
+    setLoading('dump', false);
+    showResult('err', '✕ Error', err.message);
+    showToast('Error: ' + err.message, 'err');
+  }
+}
+
+// ── TAB 2: STRUCTURED ──
+async function submitStructured() {
+  const name  = document.getElementById('s_name').value.trim();
+  const phone = document.getElementById('s_phone').value.trim();
+  if (!name || !phone) { showToast('Name and Phone are required', 'err'); return; }
+  const data = {
+    mode: 'structured',
+    customers: [{
+      name,
+      phone,
+      email:        document.getElementById('s_email').value.trim(),
+      propertyType: document.getElementById('s_proptype').value,
+      locations:    document.getElementById('s_location').value.trim(),
+      budget:       document.getElementById('s_budget').value,
+      timeline:     document.getElementById('s_timeline').value,
+      notes:        document.getElementById('s_notes').value.trim(),
+      source:       document.getElementById('s_source').value,
+      status:       'New'
+    }]
+  };
+  setLoading('struct', true);
+  try {
+    await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      mode: 'no-cors'
+    });
+    await new Promise(r => setTimeout(r, 2000));
+    setLoading('struct', false);
+    showResult('ok', '✓ Customer saved', `<b style="color:var(--text)">${name}</b> has been added to your Customers sheet with Status: New.<br><br><span style="color:var(--dim);font-size:12px">✦ Run the Manual Trigger in n8n to process this customer.</span>`);
+    showToast('Saved — ' + name, 'ok');
+  } catch(err) {
+    setLoading('struct', false);
+    showResult('err', '✕ Error', err.message);
+  }
+}
+
+// ── TAB 3: BULK / MULTI ──
+let rowCount = 0;
+function addRow() {
+  rowCount++;
+  const div = document.createElement('div');
+  div.className = 'customer-row';
+  div.id = 'row-' + rowCount;
+  div.innerHTML = `
+    <div class="row-num">Customer #${rowCount}</div>
+    ${rowCount > 1 ? `<button class="remove-btn" onclick="removeRow(${rowCount})">Remove</button>` : ''}
+    <div class="field-grid">
+      <div class="field"><label class="flbl">Name *</label><input class="finput r-name" placeholder="Full name"></div>
+      <div class="field"><label class="flbl">Phone *</label><input class="finput r-phone" placeholder="+91 XXXXX XXXXX"></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label class="flbl">Email</label><input class="finput r-email" placeholder="email@gmail.com"></div>
+      <div class="field"><label class="flbl">Property Type</label>
+        <select class="fselect r-type">
+          <option value="">Select</option>
+          <option>2BHK</option><option>3BHK</option><option>4BHK</option>
+          <option>Villa</option><option>Plot</option><option>Commercial</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label class="flbl">Location</label><input class="finput r-loc" placeholder="Salt Lake, New Town..."></div>
+      <div class="field"><label class="flbl">Budget</label>
+        <select class="fselect r-budget">
+          <option value="">Select</option>
+          <option>Below 50L</option><option>50L-80L</option>
+          <option>80L-1.2Cr</option><option>1.2Cr-2Cr</option><option>Above 2Cr</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label class="flbl">Timeline</label>
+        <select class="fselect r-timeline">
+          <option value="">Select</option>
+          <option>Within 1 month</option><option>1-3 months</option>
+          <option>3-6 months</option><option>6+ months</option><option>Just browsing</option>
+        </select>
+      </div>
+      <div class="field"><label class="flbl">Source</label>
+        <select class="fselect r-source">
+          <option value="">How did they come?</option>
+          <option>Walk-in</option><option>Referral</option><option>Cold Call</option>
+          <option>99acres</option><option>Instagram</option><option>WhatsApp Campaign</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label class="flbl">Notes</label>
+      <textarea class="ftextarea r-notes" placeholder="Special requirements..." style="min-height:60px"></textarea>
+    </div>
+  `;
+  document.getElementById('multiRows').appendChild(div);
+}
+
+function removeRow(id) {
+  document.getElementById('row-' + id).remove();
+}
+
+async function submitMulti() {
+  const rows = document.querySelectorAll('.customer-row');
+  if (rows.length === 0) { showToast('Add at least one customer', 'err'); return; }
+  const customers = [];
+  let valid = true;
+  rows.forEach(row => {
+    const name  = row.querySelector('.r-name').value.trim();
+    const phone = row.querySelector('.r-phone').value.trim();
+    if (!name || !phone) { valid = false; return; }
+    customers.push({
+      name, phone,
+      email:        row.querySelector('.r-email').value.trim(),
+      propertyType: row.querySelector('.r-type').value,
+      locations:    row.querySelector('.r-loc').value.trim(),
+      budget:       row.querySelector('.r-budget').value,
+      timeline:     row.querySelector('.r-timeline').value,
+      source:       row.querySelector('.r-source').value,
+      notes:        row.querySelector('.r-notes').value.trim(),
+      status:       'New'
+    });
+  });
+  if (!valid) { showToast('Name and Phone required for all rows', 'err'); return; }
+  setLoading('multi', true);
+  try {
+    await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'bulk', customers }),
+      mode: 'no-cors'
+    });
+    await new Promise(r => setTimeout(r, 2500));
+    setLoading('multi', false);
+    showResult('ok', `✓ ${customers.length} customer${customers.length>1?'s':''} saved`, `All customers added to your sheet with Status: New.<br><br><span style="color:var(--dim);font-size:12px">✦ Run the Manual Trigger in n8n to process them.</span>`);
+    showToast(`Saved ${customers.length} customers`, 'ok');
+    document.getElementById('multiRows').innerHTML = '';
+    rowCount = 0;
+    addRow();
+  } catch(err) {
+    setLoading('multi', false);
+    showResult('err', '✕ Error', err.message);
+  }
+}
+
+// HELPERS
+function setLoading(prefix, on) {
+  const map = { dump: ['dumpBtn','dumpSpin','dumpTxt'], struct: ['structBtn','structSpin','structTxt'], multi: ['multiBtn','multiSpin','multiTxt'] };
+  const [btn, spin, txt] = map[prefix];
+  document.getElementById(btn).disabled = on;
+  document.getElementById(spin).style.display = on ? 'block' : 'none';
+  document.getElementById(txt).textContent = on ? 'Processing…' : '⚡ ' + (prefix==='dump' ? 'Extract & Save to Sheet' : prefix==='struct' ? 'Save to Sheet' : 'Save All to Sheet');
+}
+
+function showResult(type, head, body) {
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resultHead').className = 'result-head ' + type;
+  document.getElementById('resultHead').innerHTML = head;
+  document.getElementById('resultBody').innerHTML = `<div style="font-size:13px;color:var(--muted);line-height:1.7">${body}</div>`;
+  panel.classList.add('show');
+}
+
+function hideResult() {
+  document.getElementById('resultPanel').classList.remove('show');
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3200);
+}
+
+// Init first row in multi tab
+addRow();
+</script>
+</body>
+</html>
